@@ -1,0 +1,53 @@
+body {
+  /* font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 72px;
+  -webkit-font-smoothing: antialiased;
+  font-size: 1.125em;
+  color: #333;
+  line-height: 1.5em; */
+}
+
+.timetable {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.25vh;
+  background-color: rgb(60, 65, 60);
+  margin: 0;
+  padding: 0;
+  min-height: 50vh;
+}
+
+.timetable .table {
+  
+}
+
+.timetable .day {
+  color:        white;
+  font-size:      110%;
+  font-weight:    bold;
+  text-align:     center;
+  text-transform: uppercase;
+  width:          100%;
+  /* transform: translateY(+0.5em); */
+}
+
+.timetable .time {
+  color: white;
+  font-size: 120%;
+  font-weight: bold;
+  margin-right: 5px;
+  padding: 8px;
+  text-align: right;
+  transform: translateY(-1em);
+}
+
+
+a {
+  text-decoration: none;
+  color: #09f;
+}
+
+a:hover {
+  text-decoration: underline;
+}
