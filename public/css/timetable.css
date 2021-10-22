@@ -9,8 +9,9 @@
   min-height:         50vh;
 }
 
-.timetable-builder .timetable .table {
-  
+.timetable-builder .timetable {
+  display        : flex;
+  flex-direction : row;
 }
 
 .timetable-builder .timetable .table-left-col {
@@ -58,8 +59,13 @@
   justify-content  : stretch;
 }
 
-.timetable-builder .timetable .table-cell {
+.timetable-builder .timetable .day-column {
+  width: 100%;
+}
 
+.timetable-builder .timetable .table-cell {
+  border     : "1px solid rgba(0,0,0,0.2)";
+  box-sizing : border-box;
 }
 
 
