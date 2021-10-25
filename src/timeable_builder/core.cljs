@@ -27,16 +27,41 @@
 ;; -------------------------
 ;; Views
 
-(defn table-cell [state {:keys [cell-height days]
-                   :as   table-config} 
-                  day-idx  
+(defn table-cell [state
+                  {:keys [cell-height days increment]
+                   :as   table-config}
+                  day-idx
                   time-idx
                   the-time]
-  [:div.table-cell {:style {:height cell-height}}
-   [:div (str " day-idx: "  day-idx)]
-   [:div (str " day: "      (get days day-idx))]
-   [:div (str " time-idx: " time-idx)]
-   [:div (str " the-time: " the-time)]])
+  (let [day (get days day-idx)]
+    [:div.table-cell
+     {:style {:height cell-height}
+      #_#_:on-drag       (fn [e] (prn "on-drag" day-idx time-idx))
+      :on-drag-end   (fn [e]
+                       (prn "on-dragend" day-idx time-idx)
+                       (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+                             [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
+                         (when (= from-day to-day)
+                           (swap! state assoc-in [:time-blocks day (min from-time to-time)] 
+                                  {:duration (Math/abs (- to-time from-time))}))))
+      :on-drag-enter (fn [e] (prn "on-dragenter" day-idx time-idx))
+      :on-drag-leave (fn [e] (prn "on-dragleave" day-idx time-idx)
+                       (swap! state assoc-in [:drag-and-drop :to] [day the-time]))
+      #_#_:on-drag-over  (fn [e] (prn "on-dragover" day-idx time-idx))
+      :on-drag-start (fn [e]
+                       (prn "on-dragstart" day-idx time-idx)
+                       (swap! state assoc-in [:drag-and-drop :from] [day the-time]))
+      :on-drop       (fn [e] (prn "on-drop" day-idx time-idx))}
+     [:div {:style  {:background-color :lightblue
+                     :position         :relative
+                     :height           (-> (get-in @state [:time-blocks day the-time :duration])
+                                           (/ increment)
+                                           (* cell-height)
+                                           (str "px"))}}]
+     #_[:div (str " day-idx: "  day-idx)]
+     #_[:div (str " day: "      day)]
+     #_[:div (str " time-idx: " time-idx)]
+     #_[:div (str " the-time: " the-time)]]))
 
 (defn day-column [state {:keys [min-time max-time increment] 
                    :as   table-config} day-idx]
@@ -90,11 +115,12 @@
 
 (defn home-page [table-config]
   (let [state (r/atom {:drag-and-drop {}
-                       :data          {}})]
+                       :time-blocks   {}})]
     (fn [table-config]
       [:div.timetable-builder
        [:h2 "Fun stuff with grids"]
-       [timetable state table-config]])))
+       [timetable state table-config]
+       [:pre [:code (with-out-str (cljs.pprint/pprint @state))]]])))
 
 
 ;; -------------------------
