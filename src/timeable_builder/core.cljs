@@ -13,7 +13,7 @@
    :min-time      7
    :max-time      18
    :header-height "60px"
-   :cell-height   "50px"})
+   :cell-height   "60px"})
 
 ;; -------------------------
 ;; Utils
@@ -31,7 +31,7 @@
                   day-idx  
                   time-idx
                   the-time]
-  [:div {:style {:height cell-height}}
+  [:div.table-cell {:style {:height cell-height}}
    [:div (str " day-idx: "  day-idx)]
    [:div (str " day: "      (get days day-idx))]
    [:div (str " time-idx: " time-idx)]
