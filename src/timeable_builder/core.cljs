@@ -26,7 +26,7 @@
 ;; -------------------------
 ;; Views
 
-(defn table-cell [{:keys [cell-height days]
+(defn table-cell [state {:keys [cell-height days]
                    :as   table-config} 
                   day-idx  
                   time-idx
@@ -37,19 +37,19 @@
    [:div (str " time-idx: " time-idx)]
    [:div (str " the-time: " the-time)]])
 
-(defn day-column [{:keys [min-time max-time increment] 
+(defn day-column [state {:keys [min-time max-time increment] 
                    :as   table-config} day-idx]
   [:div.day-column
    (for [the-time (range min-time max-time increment)]
      (let [time-idx (/ (- the-time min-time) increment)]
        ^{:key the-time}
-       [table-cell table-config day-idx time-idx the-time]))])
+       [table-cell state table-config day-idx time-idx the-time]))])
 
-(defn table-body [{:keys [days] :as table-config}]
+(defn table-body [state {:keys [days] :as table-config}]
   [:div.table-body
    (for [day-idx (range (count days))]
      ^{:key day-idx}
-     [day-column table-config day-idx])])
+     [day-column state table-config day-idx])])
 
 (defn table-days [days]
   [:div.days-header
@@ -64,7 +64,7 @@
      [:div.time {:style {:height cell-height}}
       (format-24int->12hr the-time)])])
 
-(defn timetable [table-config]
+(defn timetable [state table-config]
   (let [{:keys [days increment min-time max-time header-height cell-height]
          :as   table-config} (merge table-default-config table-config)]
     [:div.timetable
@@ -85,12 +85,15 @@
       [:div {:style {:height header-height}}
        [table-days days]]
       ;; Bottom
-      [table-body table-config]]]))
+      [table-body state table-config]]]))
 
-(defn home-page []
-  [:div.timetable-builder
-   [:h2 "Fun stuff with grids"]
-   [timetable]])
+(defn home-page [table-config]
+  (let [state (r/atom {:drag-and-drop {}
+                       :data          {}})]
+    (fn [table-config]
+      [:div.timetable-builder
+       [:h2 "Fun stuff with grids"]
+       [timetable state table-config]])))
 
 
 ;; -------------------------
