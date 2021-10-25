@@ -12,15 +12,16 @@
    :increment     0.5
    :min-time      7
    :max-time      18
-   :header-height "60px"
-   :cell-height   "60px"})
+   :header-height 60
+   :cell-height   60})
 
 ;; -------------------------
 ;; Utils
 
 (defn format-24int->12hr [the-time]
   (str (int (if (< the-time 12) the-time (- the-time 12)))
-       ":" (int (* (mod the-time 1) 60))
+       ":" (let [v (int (* (mod the-time 1) 60))]
+             (if (= v 0) "00" (str v)))
        " " (if (< the-time 12) "AM" "PM")))
 
 ;; -------------------------
@@ -71,7 +72,7 @@
      ;; Left
      [:div.table-left-col
       ;; Top
-      [:div {:style {:height header-height}}]
+      [:div {:style {:height (str header-height "px")}}]
       ;; Bottom
       [table-time
        {:min-time    min-time
@@ -82,7 +83,7 @@
      ;; Right
      [:div.table-right-col
       ;; Top
-      [:div {:style {:height header-height}}
+      [:div {:style {:height (str header-height "px")}}
        [table-days days]]
       ;; Bottom
       [table-body state table-config]]]))
