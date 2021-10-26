@@ -69,6 +69,13 @@
   box-sizing    : border-box;
 }
 
+.timetable-builder .timetable .time-block {
+  background-color : lightblue;
+  border           : 2px solid pink;
+  position         : relative;
+}
+
+
 
 a {
   text-decoration: none;

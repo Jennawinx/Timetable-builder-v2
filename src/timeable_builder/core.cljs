@@ -40,10 +40,7 @@
 
 (defn time-block
   [state {:keys [cell-height increment] :as table-config} day the-time duration]
-  [:div {:style  {:background-color :lightblue
-                  :border           "2px solid pink"
-                  :position         :relative
-                  :height           (block-style-height duration increment cell-height)}}])
+  [:div.time-block {:style {:height (block-style-height duration increment cell-height)}}])
 
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
