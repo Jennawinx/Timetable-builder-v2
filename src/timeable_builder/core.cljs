@@ -39,20 +39,15 @@
 ;; Views
 
 (defn time-block
-  [state {:keys [cell-height days increment] :as table-config} day the-time duration]
+  [state {:keys [cell-height increment] :as table-config} day the-time duration]
   [:div {:style  {:background-color :lightblue
                   :border           "2px solid pink"
                   :position         :relative
                   :height           (block-style-height duration increment cell-height)}}])
 
-(defn table-cell [state
-                  {:keys [cell-height days increment]
-                   :as   table-config}
-                  day-idx
-                  time-idx
-                  the-time]
-  (let [day      (get days day-idx)
-        duration (get-in @state [:time-blocks day the-time :duration])]
+(defn table-cell
+  [state {:keys [cell-height] :as table-config} day the-time]
+  (let [duration (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      {:style         {:height cell-height}
       :draggable     true
@@ -64,7 +59,7 @@
         (prn "on-dragend" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
               [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-          (swap! state assoc-in [:time-blocks day from-time] {:duration (- to-time from-time)})
+          (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)})
           (swap! state assoc-in [:drag-and-drop :from] nil)
           (swap! state assoc-in [:drag-and-drop :to]   nil)))
 
@@ -72,8 +67,8 @@
       (fn [e] (prn "on-dragenter" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
           (if (> from-time the-time)
-            (swap! state assoc-in [:drag-and-drop :from] [day the-time])
-            (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))))
+            (swap! state assoc-in [:drag-and-drop :from] [from-day the-time])
+            (swap! state assoc-in [:drag-and-drop :to]   [from-day the-time]))))
 
       :on-drag-leave
       (fn [e] (prn "on-dragleave" day the-time))
@@ -93,18 +88,17 @@
        [time-block state table-config day the-time duration])]))
 
 (defn day-column [state {:keys [min-time max-time increment] 
-                   :as   table-config} day-idx]
+                   :as   table-config} day]
   [:div.day-column
    (for [the-time (range min-time max-time increment)]
-     (let [time-idx (/ (- the-time min-time) increment)]
-       ^{:key the-time}
-       [table-cell state table-config day-idx time-idx the-time]))])
+     ^{:key the-time}
+     [table-cell state table-config day the-time])])
 
 (defn table-body [state {:keys [days] :as table-config}]
   [:div.table-body
-   (for [day-idx (range (count days))]
-     ^{:key day-idx}
-     [day-column state table-config day-idx])])
+   (for [day days]
+     ^{:key day}
+     [day-column state table-config day])])
 
 (defn table-days [days]
   [:div.days-header
