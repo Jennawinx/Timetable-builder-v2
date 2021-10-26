@@ -28,13 +28,22 @@
   (let [img (.createElement js/document "img")]
     (-> e .-dataTransfer (.setDragImage img 0 0))))
 
+(defn block-style-height [duration increment cell-height]
+  (-> duration
+      (/ increment)
+      (inc)
+      (* cell-height)
+      (str "px")))
+
 ;; -------------------------
 ;; Views
 
-(defn time-block [state 
-                  {:keys [cell-height days increment]
-                   :as   table-config}
-                  ])
+(defn time-block
+  [state {:keys [cell-height days increment] :as table-config} day the-time duration]
+  [:div {:style  {:background-color :lightblue
+                  :border           "2px solid pink"
+                  :position         :relative
+                  :height           (block-style-height duration increment cell-height)}}])
 
 (defn table-cell [state
                   {:keys [cell-height days increment]
@@ -81,18 +90,7 @@
         (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))
       :on-drop       (fn [e] (prn "on-drop" day the-time))}
      (when duration
-       [:div {:style  {:background-color :lightblue
-                       :border           "2px solid pink"
-                       :position         :relative
-                       :height           (-> duration
-                                             (/ increment)
-                                             (inc)
-                                             (* cell-height)
-                                             (str "px"))}}])
-     #_[:div (str " day-idx: "  day-idx)]
-     #_[:div (str " day: "      day)]
-     #_[:div (str " time-idx: " time-idx)]
-     #_[:div (str " the-time: " the-time)]]))
+       [time-block state table-config day the-time duration])]))
 
 (defn day-column [state {:keys [min-time max-time increment] 
                    :as   table-config} day-idx]
