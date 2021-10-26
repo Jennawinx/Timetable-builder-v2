@@ -31,6 +31,11 @@
 ;; -------------------------
 ;; Views
 
+(defn time-block [state 
+                  {:keys [cell-height days increment]
+                   :as   table-config}
+                  ])
+
 (defn table-cell [state
                   {:keys [cell-height days increment]
                    :as   table-config}
@@ -43,11 +48,11 @@
      {:style         {:height cell-height}
       :draggable     true
       :on-drag       (fn [e]
-                       (prn "on-drag" day-idx time-idx)
+                       (prn "on-drag" day the-time)
                        #_(.preventDefault e))
       :on-drag-end
       (fn [e]
-        (prn "on-dragend" day-idx time-idx)
+        (prn "on-dragend" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
               [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
           (swap! state assoc-in [:time-blocks day from-time] {:duration (- to-time from-time)})
@@ -55,26 +60,26 @@
           (swap! state assoc-in [:drag-and-drop :to]   nil)))
 
       :on-drag-enter
-      (fn [e] (prn "on-dragenter" day-idx time-idx)
+      (fn [e] (prn "on-dragenter" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
           (if (> from-time the-time)
             (swap! state assoc-in [:drag-and-drop :from] [day the-time])
             (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))))
 
       :on-drag-leave
-      (fn [e] (prn "on-dragleave" day-idx time-idx))
+      (fn [e] (prn "on-dragleave" day the-time))
 
       :on-drag-over
       (fn [e]
-        (prn "on-dragover" day-idx time-idx)
+        (prn "on-dragover" day the-time)
         #_(.preventDefault e))
       :on-drag-start
       (fn [e]
-        (prn "on-dragstart" day-idx time-idx)
+        (prn "on-dragstart" day the-time)
         (hide-default-drag-preview! e)
         (swap! state assoc-in [:drag-and-drop :from] [day the-time])
         (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))
-      :on-drop       (fn [e] (prn "on-drop" day-idx time-idx))}
+      :on-drop       (fn [e] (prn "on-drop" day the-time))}
      (when duration
        [:div {:style  {:background-color :lightblue
                        :border           "2px solid pink"
