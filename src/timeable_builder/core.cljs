@@ -24,6 +24,10 @@
              (if (= v 0) "00" (str v)))
        " " (if (< the-time 12) "AM" "PM")))
 
+(defn hide-default-drag-preview! [e]
+  (let [img (.createElement js/document "img")]
+    (-> e .-dataTransfer (.setDragImage img 0 0))))
+
 ;; -------------------------
 ;; Views
 
@@ -33,10 +37,15 @@
                   day-idx
                   time-idx
                   the-time]
-  (let [day (get days day-idx)]
+  (let [day      (get days day-idx)
+        duration (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
-     {:style {:height cell-height}
-      #_#_:on-drag       (fn [e] (prn "on-drag" day-idx time-idx))
+     {:style {:height    cell-height}
+      :draggable     true
+      :on-drag       (fn [e]
+                       (prn "on-drag" day-idx time-idx)
+                       #_(.preventDefault e)
+                       )
       :on-drag-end   (fn [e]
                        (prn "on-dragend" day-idx time-idx)
                        (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
@@ -47,17 +56,22 @@
       :on-drag-enter (fn [e] (prn "on-dragenter" day-idx time-idx))
       :on-drag-leave (fn [e] (prn "on-dragleave" day-idx time-idx)
                        (swap! state assoc-in [:drag-and-drop :to] [day the-time]))
-      #_#_:on-drag-over  (fn [e] (prn "on-dragover" day-idx time-idx))
+      :on-drag-over  (fn [e] 
+                       (prn "on-dragover" day-idx time-idx)
+                       #_(.preventDefault e))
       :on-drag-start (fn [e]
                        (prn "on-dragstart" day-idx time-idx)
+                       (hide-default-drag-preview! e)
                        (swap! state assoc-in [:drag-and-drop :from] [day the-time]))
       :on-drop       (fn [e] (prn "on-drop" day-idx time-idx))}
      [:div {:style  {:background-color :lightblue
                      :position         :relative
-                     :height           (-> (get-in @state [:time-blocks day the-time :duration])
-                                           (/ increment)
-                                           (* cell-height)
-                                           (str "px"))}}]
+                     :height           (when duration
+                                         (-> duration
+                                             (/ increment)
+                                             (inc)
+                                             (* cell-height)
+                                             (str "px")))}}]
      #_[:div (str " day-idx: "  day-idx)]
      #_[:div (str " day: "      day)]
      #_[:div (str " time-idx: " time-idx)]
