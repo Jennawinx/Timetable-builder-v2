@@ -38,37 +38,42 @@
                   time-idx
                   the-time]
   (let [day      (get days day-idx)
-        duration             (get-in @state [:time-blocks day the-time :duration])
-        [from-day from-time] (get-in @state [:drag-and-drop :from])
-        [to-day   to-time]   (get-in @state [:drag-and-drop :to])
-        start-time           (min from-time to-time)
-        end-time             (max from-time to-time)]
+        duration (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
-     {:style         {:height           cell-height
-                      :background-color (when (and (= from-day to-day day)
-                                                   (<= start-time the-time end-time))
-                                          :grey)}
+     {:style         {:height cell-height}
       :draggable     true
       :on-drag       (fn [e]
                        (prn "on-drag" day-idx time-idx)
                        #_(.preventDefault e))
-      :on-drag-end   (fn [e]
-                       (prn "on-dragend" day-idx time-idx)
-                       (when (= from-day to-day)
-                         (swap! state assoc-in [:time-blocks day (min from-time to-time)]
-                                {:duration (Math/abs (- to-time from-time))})
-                         (swap! state assoc-in [:drag-and-drop :from] nil)
-                         (swap! state assoc-in [:drag-and-drop :to]   nil)))
-      :on-drag-enter (fn [e] (prn "on-dragenter" day-idx time-idx))
-      :on-drag-leave (fn [e] (prn "on-dragleave" day-idx time-idx)
-                       (swap! state assoc-in [:drag-and-drop :to] [day the-time]))
-      :on-drag-over  (fn [e]
-                       (prn "on-dragover" day-idx time-idx)
-                       #_(.preventDefault e))
-      :on-drag-start (fn [e]
-                       (prn "on-dragstart" day-idx time-idx)
-                       (hide-default-drag-preview! e)
-                       (swap! state assoc-in [:drag-and-drop :from] [day the-time]))
+      :on-drag-end
+      (fn [e]
+        (prn "on-dragend" day-idx time-idx)
+        (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+              [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
+          (swap! state assoc-in [:time-blocks day from-time] {:duration (- to-time from-time)})
+          (swap! state assoc-in [:drag-and-drop :from] nil)
+          (swap! state assoc-in [:drag-and-drop :to]   nil)))
+
+      :on-drag-enter
+      (fn [e] (prn "on-dragenter" day-idx time-idx)
+        (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
+          (if (> from-time the-time)
+            (swap! state assoc-in [:drag-and-drop :from] [day the-time])
+            (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))))
+
+      :on-drag-leave
+      (fn [e] (prn "on-dragleave" day-idx time-idx))
+
+      :on-drag-over
+      (fn [e]
+        (prn "on-dragover" day-idx time-idx)
+        #_(.preventDefault e))
+      :on-drag-start
+      (fn [e]
+        (prn "on-dragstart" day-idx time-idx)
+        (hide-default-drag-preview! e)
+        (swap! state assoc-in [:drag-and-drop :from] [day the-time])
+        (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))
       :on-drop       (fn [e] (prn "on-drop" day-idx time-idx))}
      (when duration
        [:div {:style  {:background-color :lightblue
