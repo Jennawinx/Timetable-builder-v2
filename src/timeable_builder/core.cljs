@@ -92,10 +92,16 @@
    (fn [e]
      (prn "on-dragenter" day the-time)
      (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
-       (if (and (= from-day day) (> from-time the-time))
+       (cond  
+         (and (= from-day day) (= from-time the-time))
+         :do-nothing
+         
+         (and (= from-day day) (> from-time the-time))
          (swap! state update :drag-and-drop merge
                 {:from    [day the-time]
                  :element e})
+         
+         :else
          (swap! state assoc-in [:drag-and-drop :to] [day the-time])))
      (when (fn? on-drag-enter) (on-drag-enter e)))
 
