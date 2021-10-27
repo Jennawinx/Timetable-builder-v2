@@ -67,11 +67,14 @@
                 :height (block-style-height duration increment cell-height)}}])
     [:div]))
 
-(defn drag-drop-cell-listeners [state day the-time]
-  {:draggable     true
+(defn drag-drop-cell-listeners [state day the-time & custom-handlers]
+  (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave 
+                on-drag-over on-drag-start on-drop]} custom-handlers]
+    {:draggable     true
    :on-drag
    (fn [e]
      (prn "on-drag" day the-time)
+     (when (fn? on-drag) (on-drag e))
      #_(.preventDefault e))
 
    :on-drag-end
@@ -80,7 +83,8 @@
      (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
            [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
        (swap! state assoc-in  [:time-blocks from-day from-time] {:duration (- to-time from-time)})
-       (swap! state dissoc :drag-and-drop)))
+       (swap! state dissoc :drag-and-drop))
+     (when (fn? on-drag-end) (on-drag-end e)))
 
    :on-drag-enter
    (fn [e]
@@ -90,16 +94,18 @@
          (do
            (swap! state assoc-in [:drag-and-drop :from]    [from-day the-time])
            (swap! state assoc-in [:drag-and-drop :element] e))
-         (swap! state assoc-in [:drag-and-drop :to]        [from-day the-time]))))
+         (swap! state assoc-in [:drag-and-drop :to]        [from-day the-time])))
+     (when (fn? on-drag-enter) (on-drag-enter e)))
 
    :on-drag-leave
    (fn [e] 
-     (prn "on-dragleave" day the-time))
+     (prn "on-dragleave" day the-time)
+     (when (fn? on-drag-leave) (on-drag-leave e)))
 
    :on-drag-over
    (fn [e]
      (prn "on-dragover" day the-time)
-     #_(.preventDefault e))
+     (when (fn? on-drag-over) (on-drag-over e)))
 
    :on-drag-start
    (fn [e]
@@ -109,11 +115,13 @@
      (swap! state assoc :drag-and-drop
             {:from    [day the-time]
              :to      [day the-time]
-             :element e}))
+             :element e})
+     (when (fn? on-drag-start) (on-drag-start e)))
 
    :on-drop
    (fn [e]
-     (prn "on-drop" day the-time))})
+     (prn "on-drop" day the-time)
+     (when (fn? on-drop) (on-drop e)))}))
 
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
