@@ -3,7 +3,6 @@
   color:            #CCC;
   font-family:        Arial, Helvetica, sans-serif;
   font-size:          1.25vh;
-  background-color: rgb(60, 65, 60);
   margin:             0;
   padding:            0;
   min-height:         50vh;
@@ -28,7 +27,6 @@
 }
 
 .timetable-builder .timetable .table-right-col {
-  background-color: orange;
   flex-grow:          1;
 }
 
@@ -53,7 +51,6 @@
 
 .timetable-builder .timetable .table-body {
   display          : flex;
-  background-color : rgb(60, 65, 60);
   flex-direction   : row;
   align-items      : end;
   justify-content  : stretch;
@@ -79,7 +76,7 @@
   background-color : orange;
   position         : absolute;
   transition       : ease-out;
-  z-index          : 2;
+  z-index          : -1;
 }
 
 
