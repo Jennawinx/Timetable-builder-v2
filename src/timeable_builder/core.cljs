@@ -78,7 +78,7 @@
     {:draggable     true
    :on-drag
    (fn [e]
-     (prn "on-drag" day the-time)
+     #_(prn "on-drag" day the-time)
      (when (fn? on-drag) (on-drag e))
      #_(.preventDefault e))
 
@@ -96,7 +96,7 @@
          (do
            (swap! state assoc-in [:drag-and-drop :from]    [from-day the-time])
            (swap! state assoc-in [:drag-and-drop :element] e))
-         (swap! state assoc-in [:drag-and-drop :to]        [from-day the-time])))
+         (swap! state assoc-in [:drag-and-drop :to]        [day the-time])))
      (when (fn? on-drag-enter) (on-drag-enter e)))
 
    :on-drag-leave
@@ -106,7 +106,7 @@
 
    :on-drag-over
    (fn [e]
-     (prn "on-dragover" day the-time)
+     #_(prn "on-dragover" day the-time)
      (when (fn? on-drag-over) (on-drag-over e)))
 
    :on-drag-start
@@ -131,18 +131,32 @@
         selected? (nil? duration)]
     [:div.table-cell
      (merge
-      (->> {:on-drag-end
-            (fn [e]
-              (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
-                    [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-                (swap! state assoc-in [:time-blocks from-day from-time]
-                       {:duration (- to-time from-time)})))}
-           (drag-drop-cell-listeners state day the-time selected?))
+      (if selected?
+        (drag-drop-cell-listeners
+         state day the-time true
+         {:on-drag-end
+          (fn [e]
+            (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+                  [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
+              (swap! state assoc-in [:time-blocks from-day from-time]
+                     {:duration (- to-time from-time)})))})
+        (drag-drop-cell-listeners
+         state day the-time false
+         {:on-drag-end
+          (fn [e]
+            (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+                  [to-day   to-time]   (get-in @state [:drag-and-drop :to])
+                  time-block           (get-in @state [:time-blocks from-day from-time])]
+              (swap! state update-in [:time-blocks from-day] dissoc from-time)
+              (swap! state assoc-in  [:time-blocks to-day to-time] time-block)))}))
+      
       {:style         {:height cell-height}
        :on-click      (fn [e]
                        ;; deselect when clicking empty cell
                         (when-not (some? duration)
                           (swap! state assoc :selected nil)))})
+     [:span {:style {:position :absolute :z-index 2}} 
+      (str " day " day " time " the-time)]
      (when (some? duration)
        [time-block state table-config day the-time duration])]))
 
@@ -206,7 +220,14 @@
       [:div.timetable-builder
        [:h2 "Fun stuff with grids"]
        [timetable state table-config]
-       [:pre [:code (with-out-str (cljs.pprint/pprint @state))]]])))
+       [:pre [:code (with-out-str (cljs.pprint/pprint @state))]]
+       [:br]
+       [:br]
+       [:br]
+       [:br]
+       [:br]
+       [:br]
+       [:br]])))
 
 
 ;; -------------------------
