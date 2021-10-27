@@ -68,7 +68,13 @@
 
 .timetable-builder .timetable .time-block {
   background-color : lightblue;
-  border           : 2px solid pink;
+  /* border-radius    : 5px; */
+  border           : 2px solid white;
+  position         : relative;
+}
+
+.timetable-builder .timetable .time-block.selected {
+  border           : 2px solid yellow;
   position         : relative;
 }
 

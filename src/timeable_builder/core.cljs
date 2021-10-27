@@ -40,7 +40,14 @@
 
 (defn time-block
   [state {:keys [cell-height increment] :as table-config} day the-time duration]
-  [:div.time-block {:style {:height (block-style-height duration increment cell-height)}}])
+  (let [[selected-day selected-time] (get @state :selected)
+        selected? (and (= selected-day day) (= selected-time the-time))]
+    [:div.time-block
+     {:class    (when selected? "selected")
+      :on-click (fn [e]
+                ;; select this time block
+                  (swap! state assoc :selected [day the-time]))
+      :style {:height (block-style-height duration increment cell-height)}}]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
@@ -65,6 +72,10 @@
   (let [duration (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      {:style         {:height cell-height}
+      :on-click      (fn [e]
+                       ;; deselect when clicking empty cell
+                       (when-not (some? duration)
+                         (swap! state assoc :selected nil)))
       :draggable     true
       :on-drag       (fn [e]
                        (prn "on-drag" day the-time)
