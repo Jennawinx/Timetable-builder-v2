@@ -93,10 +93,10 @@
      (prn "on-dragenter" day the-time)
      (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
        (if (and (= from-day day) (> from-time the-time))
-         (do
-           (swap! state assoc-in [:drag-and-drop :from]    [from-day the-time])
-           (swap! state assoc-in [:drag-and-drop :element] e))
-         (swap! state assoc-in [:drag-and-drop :to]        [day the-time])))
+         (swap! state update :drag-and-drop merge
+                {:from    [day the-time]
+                 :element e})
+         (swap! state assoc-in [:drag-and-drop :to] [day the-time])))
      (when (fn? on-drag-enter) (on-drag-enter e)))
 
    :on-drag-leave
@@ -133,7 +133,12 @@
       (if (nil? duration)
         (drag-drop-cell-listeners
          state day the-time true
-         {:on-drag-end
+         {:on-drag-start
+          (fn [e]
+            ;; deselect when clicking empty cell
+            (when-not (some? duration)
+              (swap! state assoc :selected nil)))
+          :on-drag-end
           (fn [e]
             (prn "Make time block!")
             (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
