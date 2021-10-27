@@ -67,7 +67,7 @@
                 :height (block-style-height duration increment cell-height)}}])
     [:div]))
 
-(defn drag-drop-cell-listeners [state day the-time & custom-handlers]
+(defn drag-drop-cell-listeners [state day the-time & [custom-handlers]]
   (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave 
                 on-drag-over on-drag-start on-drop]} custom-handlers]
     {:draggable     true
@@ -80,11 +80,8 @@
    :on-drag-end
    (fn [e]
      (prn "on-dragend" day the-time)
-     (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
-           [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-       (swap! state assoc-in  [:time-blocks from-day from-time] {:duration (- to-time from-time)})
-       (swap! state dissoc :drag-and-drop))
-     (when (fn? on-drag-end) (on-drag-end e)))
+     (when (fn? on-drag-end) (on-drag-end e))
+     (swap! state dissoc :drag-and-drop))
 
    :on-drag-enter
    (fn [e]
@@ -128,7 +125,13 @@
   (let [duration (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      (merge
-      (drag-drop-cell-listeners state day the-time)
+      (->> {:on-drag-end
+            (fn [e]
+              (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+                    [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
+                (swap! state assoc-in [:time-blocks from-day from-time]
+                       {:duration (- to-time from-time)})))}
+           (drag-drop-cell-listeners state day the-time))
       {:style         {:height cell-height}
        :on-click      (fn [e]
                        ;; deselect when clicking empty cell
