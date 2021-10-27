@@ -73,7 +73,7 @@
    (fn [e]
      (prn "on-drag" day the-time)
      #_(.preventDefault e))
-   
+
    :on-drag-end
    (fn [e]
      (prn "on-dragend" day the-time)
@@ -83,7 +83,8 @@
        (swap! state dissoc :drag-and-drop)))
 
    :on-drag-enter
-   (fn [e] (prn "on-dragenter" day the-time)
+   (fn [e]
+     (prn "on-dragenter" day the-time)
      (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
        (if (> from-time the-time)
          (do
@@ -92,22 +93,27 @@
          (swap! state assoc-in [:drag-and-drop :to]        [from-day the-time]))))
 
    :on-drag-leave
-   (fn [e] (prn "on-dragleave" day the-time))
+   (fn [e] 
+     (prn "on-dragleave" day the-time))
 
    :on-drag-over
    (fn [e]
      (prn "on-dragover" day the-time)
      #_(.preventDefault e))
-   
+
    :on-drag-start
    (fn [e]
      (prn "on-dragstart" day the-time)
      (js/console.log e)
      (hide-default-drag-preview! e)
-     (swap! state assoc :drag-and-drop {:from    [day the-time]
-                                        :to      [day the-time]
-                                        :element e}))
-   :on-drop       (fn [e] (prn "on-drop" day the-time))})
+     (swap! state assoc :drag-and-drop
+            {:from    [day the-time]
+             :to      [day the-time]
+             :element e}))
+
+   :on-drop
+   (fn [e]
+     (prn "on-drop" day the-time))})
 
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
