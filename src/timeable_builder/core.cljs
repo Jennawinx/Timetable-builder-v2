@@ -43,16 +43,21 @@
   (let [[selected-day selected-time] (get @state :selected)
         selected? (and (= selected-day day) (= selected-time the-time))]
     [:div.time-block
-     {:class    (when selected? "selected")
-      :on-click (fn [e]
-                ;; select this time block
-                  (swap! state assoc :selected [day the-time]))
-      :style {:height (block-style-height duration increment cell-height)}}]))
+     {:class         (when selected? "selected")
+      :draggable     true
+      :on-click      (fn [e]
+                     ;; select this time block
+                       (swap! state assoc :selected [day the-time]))
+      :on-drag-start (fn [e]
+                     ;; select this time block
+                       (swap! state assoc :selected [day the-time]))
+      :style         {:height (block-style-height duration increment cell-height)}}]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
   (if-let [{:keys [from to element]} (get-in @state [:drag-and-drop :from])]
-    (let [{:keys [from to element]} (get @state :drag-and-drop)
+    (when (nil? (get-in @state [:selected]))
+     (let [{:keys [from to element]} (get @state :drag-and-drop)
           [from-day from-time] from
           [to-day   to-time]   to
           duration  (- to-time from-time)
@@ -64,10 +69,10 @@
        {:style {:left   x
                 :top    y
                 :width  width
-                :height (block-style-height duration increment cell-height)}}])
+                :height (block-style-height duration increment cell-height)}}]))
     [:div]))
 
-(defn drag-drop-cell-listeners [state day the-time & [custom-handlers]]
+(defn drag-drop-cell-listeners [state day the-time hide-preview? & [custom-handlers]]
   (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave 
                 on-drag-over on-drag-start on-drop]} custom-handlers]
     {:draggable     true
@@ -107,8 +112,8 @@
    :on-drag-start
    (fn [e]
      (prn "on-dragstart" day the-time)
-     (js/console.log e)
-     (hide-default-drag-preview! e)
+     (when hide-preview? 
+       (hide-default-drag-preview! e))
      (swap! state assoc :drag-and-drop
             {:from    [day the-time]
              :to      [day the-time]
@@ -122,7 +127,8 @@
 
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
-  (let [duration (get-in @state [:time-blocks day the-time :duration])]
+  (let [duration  (get-in @state [:time-blocks day the-time :duration])
+        selected? (nil? duration)]
     [:div.table-cell
      (merge
       (->> {:on-drag-end
@@ -131,7 +137,7 @@
                     [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
                 (swap! state assoc-in [:time-blocks from-day from-time]
                        {:duration (- to-time from-time)})))}
-           (drag-drop-cell-listeners state day the-time))
+           (drag-drop-cell-listeners state day the-time selected?))
       {:style         {:height cell-height}
        :on-click      (fn [e]
                        ;; deselect when clicking empty cell
