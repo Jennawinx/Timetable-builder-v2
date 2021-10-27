@@ -75,6 +75,12 @@
   position         : relative;
 }
 
+.timetable-builder .timetable .time-select-preview {
+  background-color : orange;
+  position         : absolute;
+  transition       : ease-out;
+  z-index          : 2;
+}
 
 
 a {

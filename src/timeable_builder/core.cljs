@@ -42,6 +42,24 @@
   [state {:keys [cell-height increment] :as table-config} day the-time duration]
   [:div.time-block {:style {:height (block-style-height duration increment cell-height)}}])
 
+(defn time-select-preview 
+  [state {:keys [cell-height increment] :as table-config}]
+  (if-let [{:keys [from to element]} (get-in @state [:drag-and-drop :from])]
+    (let [{:keys [from to element]} (get @state :drag-and-drop)
+          [from-day from-time] from
+          [to-day   to-time]   to
+          duration  (- to-time from-time)
+          rect      (-> element .-target .getBoundingClientRect)
+          x         (+ (.-left rect) (.-scrollX js/window))
+          y         (+ (.-top rect)  (.-scrollY js/window))
+          width     (.-width rect)]
+      [:div.time-select-preview
+       {:style {:left   x
+                :top    y
+                :width  width
+                :height (block-style-height duration increment cell-height)}}])
+    [:div]))
+
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
   (let [duration (get-in @state [:time-blocks day the-time :duration])]
@@ -56,15 +74,16 @@
         (prn "on-dragend" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
               [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-          (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)})
-          (swap! state assoc-in [:drag-and-drop :from] nil)
-          (swap! state assoc-in [:drag-and-drop :to]   nil)))
+          (swap! state assoc-in  [:time-blocks from-day from-time] {:duration (- to-time from-time)})
+          (swap! state dissoc :drag-and-drop)))
 
       :on-drag-enter
       (fn [e] (prn "on-dragenter" day the-time)
         (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
           (if (> from-time the-time)
-            (swap! state assoc-in [:drag-and-drop :from] [from-day the-time])
+            (do
+              (swap! state assoc-in [:drag-and-drop :from]    [from-day the-time])
+              (swap! state assoc-in [:drag-and-drop :element] e))
             (swap! state assoc-in [:drag-and-drop :to]   [from-day the-time]))))
 
       :on-drag-leave
@@ -77,11 +96,13 @@
       :on-drag-start
       (fn [e]
         (prn "on-dragstart" day the-time)
+        (js/console.log e)
         (hide-default-drag-preview! e)
-        (swap! state assoc-in [:drag-and-drop :from] [day the-time])
-        (swap! state assoc-in [:drag-and-drop :to]   [day the-time]))
+        (swap! state assoc :drag-and-drop {:from    [day the-time]
+                                           :to      [day the-time]
+                                           :element e}))
       :on-drop       (fn [e] (prn "on-drop" day the-time))}
-     (when duration
+     (when (some? duration)
        [time-block state table-config day the-time duration])]))
 
 (defn day-column [state {:keys [min-time max-time increment] 
@@ -131,7 +152,11 @@
       [:div {:style {:height (str header-height "px")}}
        [table-days days]]
       ;; Bottom
-      [table-body state table-config]]]))
+      [table-body state table-config]]
+     
+     ;; Selection preview
+     [time-select-preview state table-config]
+     ]))
 
 (defn home-page [table-config]
   (let [state (r/atom {:drag-and-drop {}
