@@ -92,7 +92,7 @@
    (fn [e]
      (prn "on-dragenter" day the-time)
      (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
-       (if (> from-time the-time)
+       (if (and (= from-day day) (> from-time the-time))
          (do
            (swap! state assoc-in [:drag-and-drop :from]    [from-day the-time])
            (swap! state assoc-in [:drag-and-drop :element] e))
@@ -127,15 +127,15 @@
 
 (defn table-cell
   [state {:keys [cell-height] :as table-config} day the-time]
-  (let [duration  (get-in @state [:time-blocks day the-time :duration])
-        selected? (nil? duration)]
+  (let [duration    (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      (merge
-      (if selected?
+      (if (nil? duration)
         (drag-drop-cell-listeners
          state day the-time true
          {:on-drag-end
           (fn [e]
+            (prn "Make time block!")
             (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
                   [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
               (swap! state assoc-in [:time-blocks from-day from-time]
@@ -144,6 +144,7 @@
          state day the-time false
          {:on-drag-end
           (fn [e]
+            (prn "Move time block!")
             (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
                   [to-day   to-time]   (get-in @state [:drag-and-drop :to])
                   time-block           (get-in @state [:time-blocks from-day from-time])]
