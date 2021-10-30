@@ -199,7 +199,7 @@
      ;; Left
      [:div.table-left-col
       ;; Top
-      [:div {:style {:height (str header-height "px")}}]
+      [:div {:style {:height (pixels header-height)}}]
       ;; Bottom
       [table-time
        {:min-time    min-time
@@ -210,7 +210,7 @@
      ;; Right
      [:div.table-right-col
       ;; Top
-      [:div {:style {:height (str header-height "px")}}
+      [:div {:style {:height (pixels header-height)}}
        [table-days days]]
       ;; Bottom
       [table-body state table-config]]
