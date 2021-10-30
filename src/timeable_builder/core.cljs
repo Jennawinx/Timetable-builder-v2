@@ -32,8 +32,10 @@
   (-> duration
       (/ increment)
       (inc)
-      (* cell-height)
-      (str "px")))
+      (* cell-height)))
+
+(defn pixels [n]
+  (str n "px"))
 
 ;; -------------------------
 ;; Views
@@ -51,7 +53,7 @@
       :on-drag-start (fn [e]
                      ;; select this time block
                        (swap! state assoc :selected [day the-time]))
-      :style         {:height (block-style-height duration increment cell-height)}}]))
+      :style         {:height (pixels (block-style-height duration increment cell-height))}}]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
@@ -60,16 +62,18 @@
      (let [{:keys [from to element]} (get @state :drag-and-drop)
           [from-day from-time] from
           [to-day   to-time]   to
-          duration  (- to-time from-time)
+          reverse?  (< to-time from-time)
+          duration  (Math/abs (- to-time from-time))
           rect      (-> element .-target .getBoundingClientRect)
+          height    (block-style-height duration increment cell-height)
+          width     (.-width rect)
           x         (+ (.-left rect) (.-scrollX js/window))
-          y         (+ (.-top rect)  (.-scrollY js/window))
-          width     (.-width rect)]
+          y         (+ (.-top rect)  (.-scrollY js/window))]
       [:div.time-select-preview
        {:style {:left   x
-                :top    y
+                :top    (if reverse? (+ (- y height) cell-height) y)
                 :width  width
-                :height (block-style-height duration increment cell-height)}}]))
+                :height (pixels height)}}]))
     [:div]))
 
 (defn drag-drop-cell-listeners [state day the-time hide-preview? & [custom-handlers]]
@@ -91,18 +95,7 @@
    :on-drag-enter
    (fn [e]
      (prn "on-dragenter" day the-time)
-     (let [[from-day from-time] (get-in @state [:drag-and-drop :from])]
-       (cond  
-         (and (= from-day day) (= from-time the-time))
-         :do-nothing
-         
-         (and (= from-day day) (> from-time the-time))
-         (swap! state update :drag-and-drop merge
-                {:from    [day the-time]
-                 :element e})
-         
-         :else
-         (swap! state assoc-in [:drag-and-drop :to] [day the-time])))
+     (swap! state assoc-in [:drag-and-drop :to] [day the-time])
      (when (fn? on-drag-enter) (on-drag-enter e)))
 
    :on-drag-leave
@@ -149,8 +142,9 @@
             (prn "Make time block!")
             (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
                   [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-              (swap! state assoc-in [:time-blocks from-day from-time]
-                     {:duration (- to-time from-time)})))})
+              (if (and (= from-day to-day) (< to-time from-time))
+                (swap! state assoc-in [:time-blocks to-day to-time]     {:duration (- from-time to-time)})
+                (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)}))))})
         (drag-drop-cell-listeners
          state day the-time false
          {:on-drag-end
