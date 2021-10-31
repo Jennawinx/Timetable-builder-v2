@@ -1,6 +1,5 @@
 
 .timetable-builder .timetable {
-  color:            #AAA;
   font-family:        Arial, Helvetica, sans-serif;
   font-size:          1.25vh;
   margin:             0;
@@ -71,7 +70,41 @@
   /* border-radius    : 5px; */
   border           : 2px solid white;
   position         : relative;
+  z-index          : 99;
 }
+
+.timetable-builder .time-block .time-block-header {
+  background-color : rgba(0,0,0,0.1);
+  display          : flex;
+  flex-wrap        : wrap-reverse;
+  padding          : 0.5em;
+}
+
+.timetable-builder .time-block .time-block-header>.header-movable-target {
+  flex-grow        : 1;
+  margin-right     : 1em;
+}
+
+.timetable-builder .time-block .time-block-header>.header-movable-target:hover {
+  cursor           : move;
+}
+
+.timetable-builder .time-block .time-block-header>.header-tools {
+
+}
+
+.timetable-builder .flat-button {
+  cursor              : pointer;
+  -webkit-user-select : none; /* Safari */        
+  -moz-user-select    : none; /* Firefox */
+  -ms-user-select     : none; /* IE10+/Edge */
+  user-select         : none; /* Standard */
+}
+
+.timetable-builder .flat-button.danger:hover {
+  color            : red;
+}
+
 
 .timetable-builder .timetable .time-block.selected {
   border           : 2px solid yellow;
@@ -85,12 +118,8 @@
   z-index          : -1;
 }
 
-
-a {
-  text-decoration: none;
-  color: #09f;
-}
-
-a:hover {
-  text-decoration: underline;
+.timetable-builder .note {
+  color            : #BBB;
+  position         : absolute;
+  z-index          : 0;
 }
