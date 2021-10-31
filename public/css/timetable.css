@@ -5,6 +5,9 @@
   margin:             0;
   padding:            0;
   min-height:         50vh;
+  /* scrollbar-width:    thin; */
+  /* scrollbar-color:  #6969dd #e0e0e0; */
+  /* scrollbar-gutter:   stable; */
 }
 
 .timetable-builder .timetable {
@@ -69,15 +72,17 @@
   background-color : lightblue;
   /* border-radius    : 5px; */
   border           : 2px solid white;
+  display          : flex;
+  flex-direction   : column;
   position         : relative;
   z-index          : 99;
 }
 
 .timetable-builder .time-block .time-block-header {
-  background-color : rgba(0,0,0,0.1);
+  background-color : rgba(50,50,50,0.1);
   display          : flex;
   flex-wrap        : wrap-reverse;
-  padding          : 0.5em;
+  padding          : 0.4em;
 }
 
 .timetable-builder .time-block .time-block-header>.header-movable-target {
@@ -91,6 +96,42 @@
 
 .timetable-builder .time-block .time-block-header>.header-tools {
 
+}
+
+.timetable-builder .time-block .time-block-body {
+  flex-grow           : 100%;
+  height              : 100%;
+  overflow-y          : auto;
+}
+
+.timetable-builder .time-block-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timetable-builder .time-block-body::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 100px;
+}
+
+.timetable-builder .time-block-body::-webkit-scrollbar-thumb {
+  /* background-color: #6969dd; */
+  /* background-color: rgba(120, 100, 230, 0.7); */
+  background-color: white;
+  border-radius: 100px;
+}
+
+
+.timetable-builder .time-block .time-block-footer {
+  background-color    : rgba(50,50,50,0.1);
+  text-align          : right;
+}
+
+.timetable-builder .time-block .end-time-btn {
+  color               : #888;
+}
+
+.timetable-builder .time-block .end-time-btn:hover {
+  color               : black;
 }
 
 .timetable-builder .flat-button {
@@ -116,6 +157,10 @@
   position         : absolute;
   transition       : ease-out;
   z-index          : -1;
+}
+
+.timetable-builder .full-width {
+  /* width: 100%; */
 }
 
 .timetable-builder .note {

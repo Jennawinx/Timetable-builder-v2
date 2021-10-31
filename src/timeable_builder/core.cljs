@@ -63,6 +63,14 @@
     (swap! state update-in [:time-blocks from-day] dissoc from-time)
     (swap! state assoc-in  [:time-blocks to-day to-time] time-block)))
 
+(defn shrink-time-block! [state day the-time duration amount]
+  (let [new-value (- duration amount)]
+    (when (pos? new-value)
+      (swap! state assoc-in  [:time-blocks day the-time :duration] new-value))))
+
+(defn grow-time-block! [state day the-time duration amount]
+  (swap! state assoc-in  [:time-blocks day the-time :duration] (+ duration amount)))
+
 ;; -------------------------
 ;; Views
 
@@ -131,7 +139,29 @@
       :on-click        #(select-timeblock! state day the-time)
       :style           {:height (pixels (block-style-height duration increment cell-height))}}
      (when selected?
-       [time-block-header state table-config day the-time duration])]))
+       [time-block-header state table-config day the-time duration])
+     [:div.time-block-body
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:br]
+      [:p "hi"]]
+     (when selected?
+       [:div.time-block-footer
+        [:span.flat-button.end-time-btn {:on-click #(shrink-time-block! state day the-time duration increment)}
+         " ↥ "]
+        [:span.flat-button.end-time-btn {:on-click #(grow-time-block! state day the-time duration increment)}
+         " ↧ "]])]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
