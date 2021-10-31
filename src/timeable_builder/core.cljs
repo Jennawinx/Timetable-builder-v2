@@ -37,6 +37,32 @@
 (defn pixels [n]
   (str n "px"))
 
+
+;; -------------------------
+;; Events 
+
+(defn select-timeblock! [state day the-time]
+  (swap! state assoc :selected [day the-time]))
+
+(defn clear-selected-timeblock! [state]
+  (swap! state assoc :selected nil))
+
+(defn make-timeblock! [state]
+  (prn "Make time block!")
+  (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+        [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
+    (if (and (= from-day to-day) (< to-time from-time))
+      (swap! state assoc-in [:time-blocks to-day to-time]     {:duration (- from-time to-time)})
+      (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)}))))
+
+(defn move-time-block! [state]
+  (prn "Move time block!")
+  (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
+        [to-day   to-time]   (get-in @state [:drag-and-drop :to])
+        time-block           (get-in @state [:time-blocks from-day from-time])]
+    (swap! state update-in [:time-blocks from-day] dissoc from-time)
+    (swap! state assoc-in  [:time-blocks to-day to-time] time-block)))
+
 ;; -------------------------
 ;; Views
 
@@ -93,15 +119,10 @@
   [:div.time-block-header
    [:div.header-movable-target
     (drag-drop-cell-listeners
-     state day the-time false
-     {:on-drag-end
-      (fn [e]
-        (prn "Move time block!")
-        (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
-              [to-day   to-time]   (get-in @state [:drag-and-drop :to])
-              time-block           (get-in @state [:time-blocks from-day from-time])]
-          (swap! state update-in [:time-blocks from-day] dissoc from-time)
-          (swap! state assoc-in  [:time-blocks to-day to-time] time-block)))})
+     state day 
+     the-time 
+     false
+     {:on-drag-end #(move-time-block! state)})
     #_"Title"]
    [:div.header-tools
     [:div.flat-button.danger "X"]]])
@@ -113,9 +134,7 @@
     [:div.time-block
      {:class           (when selected? "selected")
       :draggable       false
-      :on-click        (fn [e]
-                       ;; select this time block
-                         (swap! state assoc :selected [day the-time]))
+      :on-click        #(select-timeblock! state day the-time)
       :style           {:height (pixels (block-style-height duration increment cell-height))}}
      (when selected?
        [time-block-header state table-config day the-time duration])]))
@@ -146,28 +165,17 @@
   (let [duration    (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      (merge
-      (if (nil? duration)
+      (when (nil? duration)
         (drag-drop-cell-listeners
-         state day the-time true
-         {:on-drag-start
-          (fn [e]
-            ;; deselect when clicking empty cell
-            (when-not (some? duration)
-              (swap! state assoc :selected nil)))
-          :on-drag-end
-          (fn [e]
-            (prn "Make time block!")
-            (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
-                  [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
-              (if (and (= from-day to-day) (< to-time from-time))
-                (swap! state assoc-in [:time-blocks to-day to-time]     {:duration (- from-time to-time)})
-                (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)}))))}))
-      
+         state day
+         the-time
+         true
+         {:on-drag-start #(when-not (some? duration)
+                            (clear-selected-timeblock! state))
+          :on-drag-end   #(make-timeblock! state)}))
       {:style         {:height cell-height}
-       :on-click      (fn [e]
-                       ;; deselect when clicking empty cell
-                        (when-not (some? duration)
-                          (swap! state assoc :selected nil)))})
+       :on-click      #(when-not (some? duration)
+                         (clear-selected-timeblock! state))})
      
      [:span.note 
       (str " day " day " time " the-time)]
