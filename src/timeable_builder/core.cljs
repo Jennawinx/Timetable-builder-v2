@@ -48,7 +48,6 @@
   (swap! state assoc :selected nil))
 
 (defn make-timeblock! [state]
-  (prn "Make time block!")
   (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
         [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
     (if (and (= from-day to-day) (< to-time from-time))
@@ -56,12 +55,12 @@
       (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)}))))
 
 (defn move-time-block! [state]
-  (prn "Move time block!")
   (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
         [to-day   to-time]   (get-in @state [:drag-and-drop :to])
         time-block           (get-in @state [:time-blocks from-day from-time])]
     (swap! state update-in [:time-blocks from-day] dissoc from-time)
-    (swap! state assoc-in  [:time-blocks to-day to-time] time-block)))
+    (swap! state assoc-in  [:time-blocks to-day to-time] time-block)
+    (swap! state assoc     :selected [to-day to-time])))
 
 (defn shrink-time-block! [state day the-time duration amount]
   (let [new-value (- duration amount)]
