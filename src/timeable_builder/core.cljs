@@ -115,9 +115,9 @@
                       (prn "on-drop" day the-time)
                       (when (fn? on-drop) (on-drop e)))}))
 
-(defn time-block-header
-  [state table-config day the-time duration]
-  [:div.time-block-header
+(defn time-block-control-panel
+  [state {:keys [increment] :as table-config} day the-time duration]
+  [:div.time-block-control-panel
    [:div.header-movable-target
     (drag-drop-cell-listeners
      {:state           state 
@@ -127,7 +127,12 @@
       :custom-handlers {:on-drag-end #(move-time-block! state)}})
     #_"Title"]
    [:div.header-tools
-    [:div.flat-button.danger "X"]]])
+    [:div.flat-button.danger "✕"]
+    [:div
+     [:div.flat-button.end-time-btn {:on-click #(shrink-time-block! state day the-time duration increment)}
+      " ↥ "]
+     [:div.flat-button.end-time-btn {:on-click #(grow-time-block! state day the-time duration increment)}
+      " ↧ "]]]])
 
 (defn time-block
   [state {:keys [cell-height increment] :as table-config} day the-time duration]
@@ -139,7 +144,7 @@
       :on-click        #(select-timeblock! state day the-time)
       :style           {:height (pixels (block-style-height duration increment cell-height))}}
      (when selected?
-       [time-block-header state table-config day the-time duration])
+       [time-block-control-panel state table-config day the-time duration])
      [:div.time-block-body
       [:br]
       [:br]
@@ -155,13 +160,7 @@
       [:br]
       [:br]
       [:br]
-      [:p "hi"]]
-     (when selected?
-       [:div.time-block-footer
-        [:span.flat-button.end-time-btn {:on-click #(shrink-time-block! state day the-time duration increment)}
-         " ↥ "]
-        [:span.flat-button.end-time-btn {:on-click #(grow-time-block! state day the-time duration increment)}
-         " ↧ "]])]))
+      [:p "hi"]]]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
