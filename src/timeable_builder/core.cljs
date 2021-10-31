@@ -31,12 +31,13 @@
 (defn block-style-height [duration increment cell-height]
   (-> duration
       (/ increment)
-      (inc)
       (* cell-height)))
 
 (defn pixels [n]
   (str n "px"))
 
+(defn calc-duration [to-time from-time increment]
+  (+ (- to-time from-time) increment))
 
 ;; -------------------------
 ;; Events 
@@ -47,12 +48,12 @@
 (defn clear-selected-timeblock! [state]
   (swap! state assoc :selected nil))
 
-(defn make-timeblock! [state]
+(defn make-timeblock! [state increment]
   (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
         [to-day   to-time]   (get-in @state [:drag-and-drop :to])]
     (if (and (= from-day to-day) (< to-time from-time))
-      (swap! state assoc-in [:time-blocks to-day to-time]     {:duration (- from-time to-time)})
-      (swap! state assoc-in [:time-blocks from-day from-time] {:duration (- to-time from-time)}))))
+      (swap! state assoc-in [:time-blocks to-day to-time]     {:duration (calc-duration from-time to-time increment)})
+      (swap! state assoc-in [:time-blocks from-day from-time] {:duration (calc-duration to-time from-time increment)}))))
 
 (defn move-time-block! [state]
   (let [[from-day from-time] (get-in @state [:drag-and-drop :from])
@@ -173,7 +174,9 @@
           [from-day from-time] from
           [to-day   to-time]   to
           reverse?  (< to-time from-time)
-          duration  (Math/abs (- to-time from-time))
+          duration  (if reverse? 
+                      (calc-duration from-time to-time increment)
+                      (calc-duration to-time from-time increment))
           rect      (-> element .-target .getBoundingClientRect)
           height    (block-style-height duration increment cell-height)
           width     (.-width rect)
@@ -187,7 +190,7 @@
     [:div]))
 
 (defn table-cell
-  [state {:keys [cell-height] :as table-config} day the-time]
+  [state {:keys [cell-height increment] :as table-config} day the-time]
   (let [duration    (get-in @state [:time-blocks day the-time :duration])]
     [:div.table-cell
      (merge
@@ -200,7 +203,7 @@
           :custom-handlers {:on-drag-start #(when-not (some? duration)
                                               (clear-selected-timeblock! state))
                             :on-drag-end   (fn [e]
-                                             (make-timeblock! state)
+                                             (make-timeblock! state increment)
                                              (select-timeblock! state day the-time))}}))
       {:style         {:height cell-height}
        :on-click      #(when-not (some? duration)
