@@ -123,6 +123,15 @@
   border-radius: 100px;
 }
 
+.timetable-builder .time-block .delete-btn {
+  color            : white;
+}
+
+.timetable-builder .time-block .delete-btn:hover {
+  color            : red;
+}
+
+
 .timetable-builder .time-block .end-time-btn {
   color               : #888;
 }
@@ -138,11 +147,6 @@
   -ms-user-select     : none; /* IE10+/Edge */
   user-select         : none; /* Standard */
 }
-
-.timetable-builder .flat-button.danger:hover {
-  color            : red;
-}
-
 
 .timetable-builder .timetable .time-block.selected {
   border           : 2px solid yellow;

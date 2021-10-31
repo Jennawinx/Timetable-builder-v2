@@ -71,6 +71,9 @@
 (defn grow-time-block! [state day the-time duration amount]
   (swap! state assoc-in  [:time-blocks day the-time :duration] (+ duration amount)))
 
+(defn delete-time-block! [state day the-time]
+  (swap! state update-in [:time-blocks day] dissoc the-time))
+
 ;; -------------------------
 ;; Views
 
@@ -127,7 +130,8 @@
       :custom-handlers {:on-drag-end #(move-time-block! state)}})
     #_"Title"]
    [:div.header-tools
-    [:div.flat-button.danger "✕"]
+    [:div.flat-button.delete-btn {:on-click #(delete-time-block! state day the-time)}
+     "✕"]
     [:div
      [:div.flat-button.end-time-btn {:on-click #(shrink-time-block! state day the-time duration increment)}
       " ↥ "]
