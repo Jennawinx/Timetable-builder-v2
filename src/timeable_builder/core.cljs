@@ -66,63 +66,57 @@
 ;; -------------------------
 ;; Views
 
-(defn drag-drop-cell-listeners [state day the-time hide-preview? & [custom-handlers]]
+(defn drag-drop-cell-listeners [{:keys [state day the-time hide-preview? custom-handlers]}]
   (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave
                 on-drag-over on-drag-start on-drop]} custom-handlers]
     {:draggable     true
-     :on-drag
-     (fn [e]
-       #_(prn "on-drag" day the-time)
-       (when (fn? on-drag) (on-drag e))
-       #_(.preventDefault e))
+     :on-drag       (fn [e]
+                      #_(prn "on-drag" day the-time)
+                      (when (fn? on-drag) (on-drag e))
+                      #_(.preventDefault e))
 
-     :on-drag-end
-     (fn [e]
-       (prn "on-dragend" day the-time)
-       (when (fn? on-drag-end) (on-drag-end e))
-       (swap! state dissoc :drag-and-drop))
+     :on-drag-end   (fn [e]
+                      (prn "on-dragend" day the-time)
+                      (when (fn? on-drag-end) (on-drag-end e))
+                      (swap! state dissoc :drag-and-drop))
 
-     :on-drag-enter
-     (fn [e]
-       (prn "on-dragenter" day the-time)
-       (swap! state assoc-in [:drag-and-drop :to] [day the-time])
-       (when (fn? on-drag-enter) (on-drag-enter e)))
+     :on-drag-enter (fn [e]
+                      (prn "on-dragenter" day the-time)
+                      (swap! state assoc-in [:drag-and-drop :to] [day the-time])
+                      (when (fn? on-drag-enter) (on-drag-enter e)))
 
-     :on-drag-leave
-     (fn [e]
-       (prn "on-dragleave" day the-time)
-       (when (fn? on-drag-leave) (on-drag-leave e)))
+     :on-drag-leave (fn [e]
+                      (prn "on-dragleave" day the-time)
+                      (when (fn? on-drag-leave) (on-drag-leave e)))
 
-     :on-drag-over
-     (fn [e]
-       #_(prn "on-dragover" day the-time)
-       (when (fn? on-drag-over) (on-drag-over e)))
+     :on-drag-over  (fn [e]
+                      #_(prn "on-dragover" day the-time)
+                      (when (fn? on-drag-over) (on-drag-over e)))
 
-     :on-drag-start
-     (fn [e]
-       (prn "on-dragstart" day the-time)
-       (when hide-preview?
-         (hide-default-drag-preview! e))
-       (swap! state assoc :drag-and-drop
-              {:from    [day the-time]
-               :to      [day the-time]
-               :element e})
-       (when (fn? on-drag-start) (on-drag-start e)))
+     :on-drag-start (fn [e]
+                      (prn "on-dragstart" day the-time)
+                      (when hide-preview?
+                        (hide-default-drag-preview! e))
+                      (swap! state assoc :drag-and-drop
+                             {:from    [day the-time]
+                              :to      [day the-time]
+                              :element e})
+                      (when (fn? on-drag-start) (on-drag-start e)))
 
-     :on-drop
-     (fn [e]
-       (prn "on-drop" day the-time)
-       (when (fn? on-drop) (on-drop e)))}))
+     :on-drop       (fn [e]
+                      (prn "on-drop" day the-time)
+                      (when (fn? on-drop) (on-drop e)))}))
 
 (defn time-block-header
   [state table-config day the-time duration]
   [:div.time-block-header
    [:div.header-movable-target
     (drag-drop-cell-listeners
-     state day 
-     the-time 
-     false
-     {:on-drag-end #(move-time-block! state)})
+     {:state           state 
+      :day             day 
+      :the-time        the-time 
+      :hide-preview?   false
+      :custom-handlers {:on-drag-end #(move-time-block! state)}})
     #_"Title"]
    [:div.header-tools
     [:div.flat-button.danger "X"]]])
@@ -167,12 +161,15 @@
      (merge
       (when (nil? duration)
         (drag-drop-cell-listeners
-         state day
-         the-time
-         true
-         {:on-drag-start #(when-not (some? duration)
-                            (clear-selected-timeblock! state))
-          :on-drag-end   #(make-timeblock! state)}))
+         {:state           state
+          :day             day
+          :the-time        the-time
+          :hide-preview?   true
+          :custom-handlers {:on-drag-start #(when-not (some? duration)
+                                              (clear-selected-timeblock! state))
+                            :on-drag-end   (fn [e]
+                                             (make-timeblock! state)
+                                             (select-timeblock! state day the-time))}}))
       {:style         {:height cell-height}
        :on-click      #(when-not (some? duration)
                          (clear-selected-timeblock! state))})
