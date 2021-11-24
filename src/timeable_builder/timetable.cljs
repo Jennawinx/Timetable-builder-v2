@@ -145,16 +145,20 @@
    day
    the-time
    duration]
-  (let [[selected-day selected-time] (get @state :selected)
-        selected? (and (= selected-day day) (= selected-time the-time))]
+  (let [selection                    (get @state :selected)
+        [selected-day selected-time] selection
+        selected?                    (and (= selected-day day) (= selected-time the-time))
+        cell-info                    (get-in @state [:time-blocks day the-time])]
     [:div.time-block
      {:class           (when selected? "selected")
       :draggable       false
       :on-click        #(select-timeblock! state day the-time)
-      :style           {:height (pixels (block-style-height duration increment cell-height))}}
+      :style           {:background-color (:cell-color cell-info)
+                        :height           (pixels (block-style-height duration increment cell-height))}}
      (when selected?
        [time-block-control-panel state table-config day the-time duration])
-     [render-cell-fn (get @state :selected)]]))
+     [:div.time-block-body
+      [render-cell-fn cell-info]]]))
 
 (defn time-select-preview
   [state {:keys [cell-height increment] :as table-config}]

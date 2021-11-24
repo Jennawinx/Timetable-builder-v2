@@ -79,7 +79,7 @@
 }
 
 .timetable-builder .time-block .time-block-control-panel {
-  background-color : rgba(50,50,50,0.1);
+  background-color : rgba(50,50,50,0.2);
   display          : flex;
   flex-wrap        : wrap-reverse;
 }
@@ -133,7 +133,7 @@
 
 
 .timetable-builder .time-block .end-time-btn {
-  color               : #888;
+  color               : #555;
 }
 
 .timetable-builder .time-block .end-time-btn:hover {
@@ -161,8 +161,16 @@
 }
 
 .timetable-builder .full-width {
-  /* width: 100%; */
+  width: 100%;
 }
+
+.timetable-builder .flex-fill {
+  margin-left      : 1em;
+  margin-right     : 1em;
+  /* width            : 100%; */
+}
+
+
 
 .timetable-builder .note {
   color            : #BBB;
