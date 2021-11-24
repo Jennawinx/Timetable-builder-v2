@@ -139,7 +139,12 @@
       " ↧ "]]]])
 
 (defn time-block
-  [state {:keys [cell-height increment] :as table-config} day the-time duration]
+  [state {:keys [cell-height increment render-cell-fn] 
+          :or   {render-cell-fn (fn [_] [:div])}
+          :as table-config} 
+   day 
+   the-time 
+   duration]
   (let [[selected-day selected-time] (get @state :selected)
         selected? (and (= selected-day day) (= selected-time the-time))]
     [:div.time-block
@@ -149,22 +154,7 @@
       :style           {:height (pixels (block-style-height duration increment cell-height))}}
      (when selected?
        [time-block-control-panel state table-config day the-time duration])
-     [:div.time-block-body
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:br]
-      [:p "hi"]]]))
+     [render-cell-fn (get @state :selected)]]))
 
 (defn time-select-preview 
   [state {:keys [cell-height increment] :as table-config}]
@@ -240,7 +230,7 @@
      [:div.time {:style {:height cell-height}}
       (format-24int->12hr the-time)])])
 
-(defn timetable [state table-config]
+(defn timetable [{:keys [state table-config]}]
   (let [{:keys [days increment min-time max-time header-height cell-height]
          :as   table-config} (merge table-default-config table-config)]
     [:div.timetable
@@ -264,24 +254,36 @@
       [table-body state table-config]]
      
      ;; Selection preview
-     [time-select-preview state table-config]
-     ]))
+     [time-select-preview state table-config]]))
 
-(defn home-page [table-config]
+(defn home-page []
   (let [state (r/atom {:drag-and-drop {}
                        :time-blocks   {}})]
     (fn [table-config]
       [:div.timetable-builder
-       [:h2 "Fun stuff with grids"]
-       [timetable state table-config]
-       [:pre [:code (with-out-str (cljs.pprint/pprint @state))]]
-       [:br]
-       [:br]
-       [:br]
-       [:br]
-       [:br]
-       [:br]
-       [:br]])))
+       [timetable
+        {:state        state
+         :table-config
+         {:render-cell-fn (fn [cell-info]
+                            [:div.time-block-body
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:br]
+                             [:p "hi"]])}}]
+       [:pre
+        {:style {:min-height :10em}}
+        [:code (with-out-str (cljs.pprint/pprint @state))]]])))
 
 
 ;; -------------------------
