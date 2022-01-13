@@ -121,7 +121,7 @@
 (defn time-block-control-panel
   [state {:keys [increment] :as table-config} day the-time duration]
   [:div.time-block-control-panel
-   [:div.header-movable-target
+   #_[:div.header-movable-target
     (drag-drop-cell-listeners
      {:state           state
       :day             day
@@ -150,11 +150,19 @@
         selected?                    (and (= selected-day day) (= selected-time the-time))
         cell-info                    (get-in @state [:time-blocks day the-time])]
     [:div.time-block
-     {:class           (when selected? "selected")
-      :draggable       false
-      :on-click        #(select-timeblock! state day the-time)
-      :style           {:background-color (:cell-color cell-info)
-                        :height           (pixels (block-style-height duration increment cell-height))}}
+     (merge
+      (drag-drop-cell-listeners
+       {:state           state
+        :day             day
+        :the-time        the-time
+        :hide-preview?   false
+        :custom-handlers {:on-drag-end #(move-time-block! state)}})
+      {:class           (when selected? "selected")
+       :draggable       selected?
+       :on-click        #(select-timeblock! state day the-time)
+       :style           {:background-color (:cell-color cell-info)
+                         :height           (pixels (block-style-height duration increment cell-height))}})
+
      (when selected?
        [time-block-control-panel state table-config day the-time duration])
      [:div.time-block-body

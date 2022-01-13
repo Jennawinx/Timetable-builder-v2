@@ -18,38 +18,46 @@
                                    (concat selection)
                                    (concat [field]))
                                value))]
-    (when #_true (some? selection)
-          [:div
-           {:style {:display         :flex
-                    :padding         :1em
-                    :justify-content :center
-                    :align-items     :self-start}}
-           [:div.flex-fill
-            [:div "Title: "]
-            [:input.full-width
-             {:type :text
-              :on-change #(set-property! :title (element-value %))}]]
-           [:div.flex-fill
-            [:div "Colour: "]
-            [:input
-             {:type :color
-              :on-change #(set-property! :cell-color (element-value %))}]]
-           [:div.flex-fill
-            [:div "Tags: "]
-            [:input.full-width
-             {:type :text
-              :on-change #(set-property! :tags (element-value %))}]]
-           [:div.flex-fill {:style {:flex-grow 1}}
-            [:div "Desc: "]
-            [:input.full-width
-             {:type :text
-              :on-change #(set-property! :tags (element-value %))}]]])))
+    [:div
+     {:style {:display         :flex
+              :padding         :1em
+              :justify-content :center
+              :align-items     :self-start}}
+     [:div.flex-fill
+      [:div "Title: "]
+      [:input.full-width
+       {:type :text
+        :on-change #(set-property! :title (element-value %))}]]
+     [:div.flex-fill
+      [:div "Colour: "]
+      [:input
+       {:type :color
+        :on-change #(set-property! :cell-color (element-value %))}]]
+     [:div.flex-fill
+      [:div "Tags: "]
+      [:input.full-width
+       {:type :text
+        :on-change #(set-property! :tags (element-value %))}]]
+     [:div.flex-fill {:style {:flex-grow 1}}
+      [:div "Desc: "]
+      [:textarea.full-width
+       {:on-change #(set-property! :tags (element-value %))}]]]))
 
 (defn home-page []
-  (r/with-let [state           (r/atom {:timetable {}})
+  (r/with-let [state           (r/atom {:timetable     {}
+                                        :show-toolbar? false})
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
-     [toolbar timetable-state]
+     [:div
+      {:on-click #(swap! state update :show-toolbar? not)
+       :style    {:position         :absolute
+                  :background-color "teal"
+                  :height           "10px"
+                  :width            "10px"
+                  :margin           "5px"
+                  :border-radius    "5px"}}]
+     (when (:show-toolbar? @state)
+       [toolbar timetable-state])
      [timetable/timetable
       {:state            timetable-state
        :table-config
