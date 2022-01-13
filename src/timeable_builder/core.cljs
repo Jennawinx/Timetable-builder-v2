@@ -2,7 +2,16 @@
   (:require
    [reagent.core :as r]
    [reagent.dom :as d]
-   [timeable-builder.timetable :as timetable]))
+   [timeable-builder.timetable :as timetable]
+
+   [syn-antd.col      :as col]
+   [syn-antd.form     :as form]
+   [syn-antd.input    :as input]
+   [syn-antd.row      :as row]
+   [syn-antd.select   :as select]
+   [syn-antd.space    :as space]
+   [syn-antd.tag      :as tag]
+   ))
 
 (defn element-value
   "Gets the value of the targeted element"
@@ -17,35 +26,44 @@
                                (-> [:time-blocks]
                                    (concat selection)
                                    (concat [field]))
-                               value))]
-    [:div
-     {:style {:display         :flex
-              :padding         :1em
-              :justify-content :center
-              :align-items     :self-start}}
-     [:div.flex-fill
-      [:div "Title: "]
-      [:input.full-width
-       {:type :text
-        :on-change #(set-property! :title (element-value %))}]]
-     [:div.flex-fill
-      [:div "Colour: "]
-      [:input
-       {:type :color
-        :on-change #(set-property! :cell-color (element-value %))}]]
-     [:div.flex-fill
-      [:div "Tags: "]
-      [:input.full-width
-       {:type :text
-        :on-change #(set-property! :tags (element-value %))}]]
-     [:div.flex-fill {:style {:flex-grow 1}}
-      [:div "Desc: "]
-      [:textarea.full-width
-       {:on-change #(set-property! :tags (element-value %))}]]]))
+                               value))
+        get-property  (fn [field]
+                        (get-in @state
+                                (-> [:time-blocks]
+                                    (concat selection)
+                                    (concat [field]))))]
+    [row/row {:style {:padding :1em}}
+     [col/col {:span 8}
+      [row/row
+       [col/col {:flex :auto}
+        [:div "Title: "]
+        [input/input
+         {:type      :text
+          :value     (get-property :title)
+          :on-change #(set-property! :title (element-value %))}]]
+       [col/col
+        [:div "Colour: "]
+        [input/input
+         {:type      :color
+          :value     (get-property :cell-color)
+          :on-change #(set-property! :cell-color (element-value %))}]]]
+      [row/row
+       [:div "Tags: "]
+       [input/input
+        {:type      :text
+         :value     (get-property :tags)
+         :on-change #(set-property! :tags (element-value %))}]]]
+     [col/col {:span 16}
+      [:div.flex-fill {:style {:flex-grow 1}}
+       [:div "Desc: "]
+       [input/input-text-area
+        {:value     (get-property :desc)
+         :on-change #(set-property! :desc (element-value %))
+         :rows      4}]]]]))
 
 (defn home-page []
   (r/with-let [state           (r/atom {:timetable     {}
-                                        :show-toolbar? false})
+                                        :show-toolbar? true})
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
      [:div
