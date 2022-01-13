@@ -9,3 +9,17 @@ body {
   line-height: 1.5em; */
   margin: 0;
 }
+
+.tag {
+  box-sizing:    border-box;
+  border-radius: 0.25em;
+  border:        1px solid rgba(100,100,100,0.4);
+  color:         rgba(20,20,20,0.8);
+  margin:        0.25em;
+}
+
+.timeblock_title {
+  font-size:     120%;
+  font-weight:   bold;
+  margin-bottom: 0.25em;
+}

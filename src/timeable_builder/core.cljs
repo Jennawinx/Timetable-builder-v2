@@ -1,5 +1,6 @@
 (ns timeable-builder.core
   (:require
+   [clojure.string :as string]
    [reagent.core :as r]
    [reagent.dom :as d]
    [timeable-builder.timetable :as timetable]
@@ -49,10 +50,36 @@
           :on-change #(set-property! :cell-color (element-value %))}]]]
       [row/row
        [:div "Tags: "]
-       [input/input
-        {:type      :text
-         :value     (get-property :tags)
-         :on-change #(set-property! :tags (element-value %))}]]]
+       [select/select 
+        {:mode           :tags
+         :style          {:width :100%}
+         :show-arrow     true
+         :on-select      (fn [obj]
+                           (let [s             (.-label obj)
+                                 [label color] (string/split s ":")]
+                             (set-property! :tags
+                                            (concat (get-property :tags)
+                                                    [{:label label
+                                                      :value s
+                                                      :color color}]))))
+         :label-in-value true
+         :value          (or (get-property :tags) [])
+         :tag-render     (fn [props]
+                           (js/console.log props)
+                           #_(r/as-element
+                              [tag/tag "hello"])
+                           (let [{:strs [value closable onClose] :as props} (js->clj props)
+                                 [label color]                              (string/split value ":")] 
+                             (r/as-element
+                              [tag/tag
+                               {:style         {:background-color (or color :gainsboro)}
+                                :class         "tag"
+                                :on-mouse-down (fn [e]
+                                                 (.preventDefault e)
+                                                 (.stopPropagation e))
+                                :closable      closable
+                                :on-close      onClose}
+                               label])))}]]]
      [col/col {:span 16}
       [:div.flex-fill {:style {:flex-grow 1}}
        [:div "Desc: "]
@@ -82,9 +109,13 @@
        {:render-cell-fn (fn [{:keys [title tags] :as cell-info}]
                           (prn "cell-info " cell-info)
                           [:div
-                           {:style {:padding           :1em}}
-                           [:b {:style {:font-size :120%}} 
-                            title]])}}]
+                           {:style {:padding :1em}}
+                           [:p.timeblock_title title]
+                           (for [{:keys [label color]} tags]
+                             ^{:key label}
+                             [tag/tag {:style {:background-color (or color :gainsboro)}
+                                       :class "tag"}
+                              label])])}}]
      [:pre
       {:style {:min-height :10em}}
       [:code (with-out-str (cljs.pprint/pprint @state))]]]))
