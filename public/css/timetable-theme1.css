@@ -16,14 +16,17 @@
 }
 
 .timetable .time-column .time {
-  color: gainsboro;
+  color:   gainsboro;
+  font-size: 12px;
 }
 
 .timetable .days-header .day {
-  color: white;
+  color:   white;
+  font-size: 12px;
 }
 
 .timetable .table-cell {
+  box-sizing    : content-box;
   border-left   : 3px solid rgba(0,0,0,0.1);
   border-right  : 3px solid rgba(0,0,0,0.1);
   border-top    : 1px solid rgba(0,0,0,0.1);
@@ -31,10 +34,11 @@
 
 .timetable .time-block {
   /* background-color : lightblue; */
-  border: none;
+  border: 1px solid rgba(50, 50, 50, 0.5);
+  border-radius: 0.25em;
   /* border-right  : 1px solid rgba(0,0,0,0.1); */
   /* border-left   : 1px solid rgba(0,0,0,0.1); */
-  border-top    : 2px solid white;
+  /* border-top    : 2px solid white; */
   /* border-bottom : 1px solid white; */
   /* border           : 2px solid white; */
 }
