@@ -1,10 +1,14 @@
 (ns timeable-builder.core
   (:require
+   [cljs.reader :as reader]
+   [cljs.pprint :as pprint]
    [clojure.string :as string]
+
    [reagent.core :as r]
    [reagent.dom :as d]
    [timeable-builder.timetable :as timetable]
 
+   [syn-antd.button   :as button]
    [syn-antd.col      :as col]
    [syn-antd.form     :as form]
    [syn-antd.input    :as input]
@@ -19,18 +23,34 @@
   [e]
   (-> e .-target .-value))
 
+(defn local-save [time-blocks]
+  (.setItem js/localStorage :time-blocks (pr-str time-blocks)))
+
+(defn get-local-save []
+  (-> (.getItem js/localStorage :time-blocks)
+      (reader/read-string)))
+
+(defn download-as-edn! [value export-name]
+  (let [data-blob (js/Blob. #js [(with-out-str (pprint/pprint value))]  #js {:type "text/plain"})
+        link      (.createElement js/document "a")]
+    (set! (.-href link) (.createObjectURL js/URL data-blob))
+    (.setAttribute link "download" export-name)
+    (.appendChild (.-body js/document) link)
+    (.click link)
+    (.removeChild (.-body js/document) link)))
+
 (defn toolbar [state]
-  (let [selection     (get-in @state [:selected])
+  (let [selection     (get-in @state [:timetable :selected])
         set-property! (fn [field value]
                         (swap! state
                                assoc-in
-                               (-> [:time-blocks]
+                               (-> [:timetable :time-blocks]
                                    (concat selection)
                                    (concat [field]))
                                value))
         get-property  (fn [field]
                         (get-in @state
-                                (-> [:time-blocks]
+                                (-> [:timetable :time-blocks]
                                     (concat selection)
                                     (concat [field]))))]
     [row/row {:style {:padding :1em}}
@@ -80,16 +100,36 @@
                                 :closable      closable
                                 :on-close      onClose}
                                label])))}]]]
-     [col/col {:span 16}
+     [col/col {:lg 14 :sm 16}
       [:div.flex-fill {:style {:flex-grow 1}}
        [:div "Desc: "]
        [input/input-text-area
         {:value     (get-property :desc)
          :on-change #(set-property! :desc (element-value %))
-         :rows      4}]]]]))
+         :rows      4}]]]
+     [col/col {:lg 2 :sm 24}
+      [:div "Actions: "]
+      [row/row 
+       [col/col {:lg 24 :sm 12}
+        [button/button {:block    true
+                        :on-click #(local-save (get-in @state [:timetable :time-blocks]))} 
+         "Local Save"]]
+       [col/col {:lg 24 :sm 12}
+        [button/button {:block true
+                        :on-click #(download-as-edn!
+                                    (get-in @state [:timetable :time-blocks])
+                                    (str "timetable_"
+                                         (-> (.toLocaleString (js/Date.))
+                                             (string/replace #"[\s]" "_")
+                                             (string/replace #"[,]" "")
+                                             (string/replace #"[/:]" "-"))
+                                         ".edn"))}
+         "Download Data"]]]]]))
 
 (defn home-page []
-  (r/with-let [state           (r/atom {:timetable     {}
+  (r/with-let [time-blocks     (get-local-save)
+               state           (r/atom {:timetable
+                                        {:time-blocks (or time-blocks {})}
                                         :show-toolbar? true})
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
@@ -102,7 +142,7 @@
                   :margin           "5px"
                   :border-radius    "5px"}}]
      (when (:show-toolbar? @state)
-       [toolbar timetable-state])
+       [toolbar state])
      [timetable/timetable
       {:state            timetable-state
        :table-config
@@ -118,7 +158,7 @@
                               label])])}}]
      [:pre
       {:style {:min-height :10em}}
-      [:code (with-out-str (cljs.pprint/pprint @state))]]]))
+      [:code (with-out-str (pprint/pprint @state))]]]))
 
 
 ;; -------------------------
