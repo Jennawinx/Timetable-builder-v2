@@ -95,40 +95,60 @@
         [input/input
          {:type      :text
           :value     (get-property :title)
+          :disabled  (nil? selection)
           :on-change #(set-property! :title (element-value %))}]]
        [col/col
         [:div "Colour: "]
         [input/input
          {:type      :color
-          :value     (get-property :cell-color)
+          :value     (or (get-property :cell-color) "#add8e6")
+          :disabled  (nil? selection)
           :on-change #(set-property! :cell-color (element-value %))}]]]
       [row/row
        [:div "Tags: "]
-       [select/select 
+       [select/select
         {:mode           :tags
          :style          {:width :100%}
          :show-arrow     true
+         :disabled       (nil? selection)
          :on-select      (fn [obj]
-                           (let [s             (.-label obj)
-                                 [label color] (string/split s ":")]
-                             (set-property! :tags (concat (get-property :tags)
-                                                          [{:label label
-                                                            :value s
-                                                            :color color}]))))
+                           (when-not (string/blank? (.-label obj))
+                             (let [s             (.-label obj)
+                                   [label color] (string/split s ":")]
+                               (set-property! :tags (concat (get-property :tags)
+                                                            [{:label label
+                                                              :value s
+                                                              :color color}])))))
          :label-in-value true
          :value          (or (get-property :tags) [])
+         :options        (->> (reduce
+                               (fn [result [day time-blocks]]
+                                 (reduce
+                                  (fn [result [time time-block]]
+                                    (if (nil? (:tags time-block))
+                                      result
+                                      (reduce (fn [result tag]
+                                                (conj result {:value (:value tag)}))
+                                              result
+                                              (:tags time-block))))
+                                  result
+                                  time-blocks))
+                               []
+                               (get-in @state [:timetable :time-blocks]))
+                              (distinct)
+                              (sort-by :value))
          :tag-render     (fn [props]
                            (let [{:strs [value closable onClose] :as props} (js->clj props)
-                                 [label color]                              (string/split value ":")] 
+                                 [label color]                              (string/split value ":")]
                              (r/as-element
                               [tag/tag
-                               {:style         {:background-color (or color :gainsboro)}
+                               {:style         {:background-color color}
                                 :class         "tag"
                                 :on-mouse-down (fn [e]
                                                  (.preventDefault e)
                                                  (.stopPropagation e))
                                 :closable      closable
-                                :on-close      (fn [& args] 
+                                :on-close      (fn [& args]
                                                  (apply onClose args)
                                                  (set-property! :tags (->> (get-property :tags)
                                                                            (filter (comp (partial not= label) :label))
@@ -139,6 +159,7 @@
        [:div "Desc: "]
        [input/input-text-area
         {:value     (get-property :desc)
+         :disabled  (nil? selection)
          :on-change #(set-property! :desc (element-value %))
          :rows      4}]]]
      [col/col {:lg 3 :sm 24}
@@ -151,7 +172,7 @@
    [:div.timeblock__tag-group
     (for [{:keys [label color]} tags]
       ^{:key label}
-      [tag/tag {:style {:background-color (or color :gainsboro)}
+      [tag/tag {:style {:background-color color}
                 :class "tag"}
        label])]
    [:div {:style
