@@ -80,17 +80,10 @@
 (defn toolbar [state]
   (let [selection     (get-in @state [:timetable :selected])
         set-property! (fn [field value]
-                        (swap! state
-                               assoc-in
-                               (-> [:timetable :time-blocks]
-                                   (concat selection)
-                                   (concat [field]))
+                        (swap! state assoc-in (concat [:timetable :time-blocks] selection [field])
                                value))
         get-property  (fn [field]
-                        (get-in @state
-                                (-> [:timetable :time-blocks]
-                                    (concat selection)
-                                    (concat [field]))))]
+                        (get-in @state (concat [:timetable :time-blocks] selection [field])))]
     [row/row {:style {:padding :1em}}
      [col/col {:span 8}
       [row/row
@@ -115,15 +108,13 @@
          :on-select      (fn [obj]
                            (let [s             (.-label obj)
                                  [label color] (string/split s ":")]
-                             (set-property! :tags
-                                            (concat (get-property :tags)
-                                                    [{:label label
-                                                      :value s
-                                                      :color color}]))))
+                             (set-property! :tags (concat (get-property :tags)
+                                                          [{:label label
+                                                            :value s
+                                                            :color color}]))))
          :label-in-value true
          :value          (or (get-property :tags) [])
          :tag-render     (fn [props]
-                           (js/console.log props)
                            (let [{:strs [value closable onClose] :as props} (js->clj props)
                                  [label color]                              (string/split value ":")] 
                              (r/as-element
@@ -134,7 +125,11 @@
                                                  (.preventDefault e)
                                                  (.stopPropagation e))
                                 :closable      closable
-                                :on-close      onClose}
+                                :on-close      (fn [& args] 
+                                                 (apply onClose args)
+                                                 (set-property! :tags (->> (get-property :tags)
+                                                                           (filter (comp (partial not= label) :label))
+                                                                           (vec))))}
                                label])))}]]]
      [col/col {:lg 13 :sm 16}
       [:div.flex-fill {:style {:flex-grow 1}}
