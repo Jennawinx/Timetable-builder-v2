@@ -17,8 +17,6 @@
 
 .timetable .time-column .time {
   color: gainsboro;
-  /* color: darkgray; */
-  /* font-weight: lighter; */
 }
 
 .timetable .days-header .day {
@@ -33,9 +31,9 @@
 
 .timetable .time-block {
   /* background-color : lightblue; */
-  /* border: none; */
-  border-right  : 2px solid rgba(0,0,0,0.1);
-  border-left   : 2px solid rgba(0,0,0,0.1);
+  border: none;
+  /* border-right  : 1px solid rgba(0,0,0,0.1); */
+  /* border-left   : 1px solid rgba(0,0,0,0.1); */
   border-top    : 2px solid white;
   /* border-bottom : 1px solid white; */
   /* border           : 2px solid white; */
