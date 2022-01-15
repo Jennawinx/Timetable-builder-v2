@@ -84,7 +84,8 @@
                                value))
         get-property  (fn [field]
                         (get-in @state (concat [:timetable :time-blocks] selection [field])))]
-    [row/row {:style {:padding :1em}}
+    [row/row {:style  {:padding :1em}
+              :gutter 12}
      [col/col {:span 8}
       [row/row
        [col/col {:flex :auto}
@@ -148,14 +149,8 @@
                                         :show-toolbar? true})
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
-     [:div
-      {:on-click #(swap! state update :show-toolbar? not)
-       :style    {:position         :absolute
-                  :background-color "teal"
-                  :height           "10px"
-                  :width            "10px"
-                  :margin           "5px"
-                  :border-radius    "5px"}}]
+     [:div.open-editor-btn
+      {:on-click #(swap! state update :show-toolbar? not)}]
      (when (:show-toolbar? @state)
        [toolbar state])
      [timetable/timetable

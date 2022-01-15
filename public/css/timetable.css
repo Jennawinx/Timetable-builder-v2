@@ -1,5 +1,5 @@
 
-.timetable-builder .timetable {
+.timetable {
   font-family:        Arial, Helvetica, sans-serif;
   font-size:          1.25vh;
   margin:             0;
@@ -8,18 +8,15 @@
   /* scrollbar-width:    thin; */
   /* scrollbar-color:  #6969dd #e0e0e0; */
   /* scrollbar-gutter:   stable; */
+  display            : flex;
+  flex-direction     : row;
 }
 
-.timetable-builder .timetable {
-  display        : flex;
-  flex-direction : row;
-}
-
-.timetable-builder .timetable .table-left-col {
+.timetable .table-left-col {
   background-color: darkseagreen;
 }
 
-.timetable-builder .timetable .time-column .time {
+.timetable .time-column .time {
   color:      white;
   font-size:    120%;
   font-weight:  bold;
@@ -28,11 +25,11 @@
   transform:    translateY(-0.5em);
 }
 
-.timetable-builder .timetable .table-right-col {
+.timetable .table-right-col {
   flex-grow:          1;
 }
 
-.timetable-builder .timetable .days-header {
+.timetable .days-header {
   display         : flex;
   align-items     : end;
   background-color: grey;
@@ -41,7 +38,7 @@
   justify-content : stretch;
 }
 
-.timetable-builder .timetable .days-header .day {
+.timetable .days-header .day {
   color:          white;
   font-size:        110%;
   font-weight:      bold;
@@ -51,24 +48,24 @@
   width:            100%;
 }
 
-.timetable-builder .timetable .table-body {
+.timetable .table-body {
   display          : flex;
   flex-direction   : row;
   align-items      : end;
   justify-content  : stretch;
 }
 
-.timetable-builder .timetable .day-column {
+.timetable .day-column {
   width: 100%;
 }
 
-.timetable-builder .timetable .table-cell {
+.timetable .table-cell {
   border-right  : 1px solid rgba(0,0,0,0.2);
   border-top    : 1px solid rgba(0,0,0,0.2);
   box-sizing    : border-box;
 }
 
-.timetable-builder .timetable .time-block {
+.timetable .time-block {
   background-color : lightblue;
   /* border-radius    : 5px; */
   border           : 2px solid white;
@@ -78,69 +75,69 @@
   z-index          : 99;
 }
 
-.timetable-builder .time-block .time-block-control-panel {
+.timetable .time-block-control-panel {
   background-color : rgba(50,50,50,0.2);
   display          : flex;
   flex-wrap        : wrap-reverse;
 }
 
-.timetable-builder .time-block .time-block-control-panel>.header-movable-target {
+.timetable .time-block-control-panel>.header-movable-target {
   background-color : grey;
   height           : 100%;
   width            : 1ch;
 }
 
-.timetable-builder .time-block .time-block-control-panel>.header-movable-target:hover {
+.timetable .time-block-control-panel>.header-movable-target:hover {
   cursor           : move;
 }
 
-.timetable-builder .time-block .time-block-control-panel>.header-tools {
+.timetable .time-block-control-panel>.header-tools {
   display          : flex;
   flex-direction   : column;
   justify-content  : space-between;
   padding          : 0.4em 0.2em;
 }
 
-.timetable-builder .time-block .time-block-body {
+.timetable .time-block-body {
   flex-grow           : 1;
   height              : 100%;
   overflow-y          : auto;
 }
 
-.timetable-builder .time-block-body::-webkit-scrollbar {
+.timetable .time-block-body::-webkit-scrollbar {
   width: 6px;
 }
 
-.timetable-builder .time-block-body::-webkit-scrollbar-track {
+.timetable .time-block-body::-webkit-scrollbar-track {
   background-color: transparent;
   border-radius: 100px;
 }
 
-.timetable-builder .time-block-body::-webkit-scrollbar-thumb {
+.timetable .time-block-body::-webkit-scrollbar-thumb {
   /* background-color: #6969dd; */
   /* background-color: rgba(120, 100, 230, 0.7); */
   background-color: white;
   border-radius: 100px;
 }
 
-.timetable-builder .time-block .delete-btn {
+.timetable .time-block .delete-btn {
   color            : white;
 }
 
-.timetable-builder .time-block .delete-btn:hover {
+.timetable .time-block .delete-btn:hover {
   color            : red;
 }
 
 
-.timetable-builder .time-block .end-time-btn {
+.timetable .time-block .end-time-btn {
   color               : #555;
 }
 
-.timetable-builder .time-block .end-time-btn:hover {
+.timetable .time-block .end-time-btn:hover {
   color               : black;
 }
 
-.timetable-builder .flat-button {
+.timetable .flat-button {
   cursor              : pointer;
   -webkit-user-select : none; /* Safari */        
   -moz-user-select    : none; /* Firefox */
@@ -148,23 +145,23 @@
   user-select         : none; /* Standard */
 }
 
-.timetable-builder .timetable .time-block.selected {
+.timetable .time-block.selected {
   border           : 2px solid yellow;
   position         : relative;
 }
 
-.timetable-builder .timetable .time-select-preview {
+.timetable .time-select-preview {
   background-color : orange;
   position         : absolute;
   transition       : ease-out;
   z-index          : -1;
 }
 
-.timetable-builder .full-width {
+.timetable .full-width {
   width: 100%;
 }
 
-.timetable-builder .flex-fill {
+.timetable .flex-fill {
   margin-left      : 1em;
   margin-right     : 1em;
   /* width            : 100%; */
@@ -172,7 +169,7 @@
 
 
 
-.timetable-builder .note {
+.timetable .note {
   color            : #BBB;
   position         : absolute;
   z-index          : 0;

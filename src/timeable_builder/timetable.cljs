@@ -211,7 +211,8 @@
        :on-click      #(when-not (some? duration)
                          (clear-selected-timeblock! state))})
 
-     [:span.note
+    ;; DEBUG: debug cells here     
+     #_[:span.note
       (str " day " day " time " the-time)]
      (when (some? duration)
        [time-block state table-config day the-time duration])]))
