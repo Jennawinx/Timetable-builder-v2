@@ -23,3 +23,8 @@ body {
   font-weight:   bold;
   margin-bottom: 0.25em;
 }
+
+/* Overwrite antd */
+.upload-btn .ant-upload {
+  width:         100%;
+}

@@ -12,19 +12,21 @@
    [syn-antd.col      :as col]
    [syn-antd.form     :as form]
    [syn-antd.input    :as input]
+   [syn-antd.message  :as message]
    [syn-antd.row      :as row]
    [syn-antd.select   :as select]
    [syn-antd.space    :as space]
    [syn-antd.tag      :as tag]
-   ))
+   [syn-antd.upload   :as upload]))
 
 (defn element-value
   "Gets the value of the targeted element"
   [e]
   (-> e .-target .-value))
 
-(defn local-save [time-blocks]
-  (.setItem js/localStorage :time-blocks (pr-str time-blocks)))
+(defn local-save! [time-blocks]
+  (.setItem js/localStorage :time-blocks (pr-str time-blocks))
+  (message/success-ant-message "Local save complete"))
 
 (defn get-local-save []
   (-> (.getItem js/localStorage :time-blocks)
@@ -38,6 +40,42 @@
     (.appendChild (.-body js/document) link)
     (.click link)
     (.removeChild (.-body js/document) link)))
+
+(defn action-buttons [state]
+  [:<>
+   [:div "Actions: "]
+   [row/row
+    [col/col {:lg 24 :sm 8}
+     [button/button {:block    true
+                     :on-click #(local-save! (get-in @state [:timetable :time-blocks]))}
+      "Local Save"]]
+    [col/col {:lg 24 :sm 8}
+     [button/button {:block true
+                     :on-click #(download-as-edn!
+                                 (get-in @state [:timetable :time-blocks])
+                                 (str "timetable_"
+                                      (-> (.toLocaleString (js/Date.))
+                                          (string/replace #"[\s]" "_")
+                                          (string/replace #"[,]" "")
+                                          (string/replace #"[/:]" "-"))
+                                      ".edn"))}
+      "Download Data"]]
+    [col/col {:lg 24 :sm 8}
+     [upload/upload {:name      :file
+                     :file-list []
+                     :class     "upload-btn"
+                    ;;  :style     {:class "full-width"}
+                    ;;  :list-type :picture-card
+                     :before-upload
+                     (fn [file]
+                       (-> (.text file)
+                           (.then
+                            (fn [s]
+                              (let [value (reader/read-string s)]
+                                (swap! state assoc-in [:timetable :time-blocks] value)
+                                (local-save! value))))))}
+      [button/button {:block true}
+       "Load Data"]]]]])
 
 (defn toolbar [state]
   (let [selection     (get-in @state [:timetable :selected])
@@ -86,8 +124,6 @@
          :value          (or (get-property :tags) [])
          :tag-render     (fn [props]
                            (js/console.log props)
-                           #_(r/as-element
-                              [tag/tag "hello"])
                            (let [{:strs [value closable onClose] :as props} (js->clj props)
                                  [label color]                              (string/split value ":")] 
                              (r/as-element
@@ -100,31 +136,15 @@
                                 :closable      closable
                                 :on-close      onClose}
                                label])))}]]]
-     [col/col {:lg 14 :sm 16}
+     [col/col {:lg 13 :sm 16}
       [:div.flex-fill {:style {:flex-grow 1}}
        [:div "Desc: "]
        [input/input-text-area
         {:value     (get-property :desc)
          :on-change #(set-property! :desc (element-value %))
          :rows      4}]]]
-     [col/col {:lg 2 :sm 24}
-      [:div "Actions: "]
-      [row/row 
-       [col/col {:lg 24 :sm 12}
-        [button/button {:block    true
-                        :on-click #(local-save (get-in @state [:timetable :time-blocks]))} 
-         "Local Save"]]
-       [col/col {:lg 24 :sm 12}
-        [button/button {:block true
-                        :on-click #(download-as-edn!
-                                    (get-in @state [:timetable :time-blocks])
-                                    (str "timetable_"
-                                         (-> (.toLocaleString (js/Date.))
-                                             (string/replace #"[\s]" "_")
-                                             (string/replace #"[,]" "")
-                                             (string/replace #"[/:]" "-"))
-                                         ".edn"))}
-         "Download Data"]]]]]))
+     [col/col {:lg 3 :sm 24}
+      [action-buttons state]]]))
 
 (defn home-page []
   (r/with-let [time-blocks     (get-local-save)
