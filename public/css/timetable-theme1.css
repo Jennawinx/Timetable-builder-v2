@@ -38,3 +38,27 @@
   /* border-bottom : 1px solid white; */
   /* border           : 2px solid white; */
 }
+
+/* MARKDOWN STYLING */
+
+.time-block-body {
+  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+  line-height: 1.25em;
+}
+
+.time-block p,
+.time-block ul,
+.time-block ol {
+  margin-bottom: 0.5em;
+}
+
+.time-block-body ul,
+.time-block-body ol {
+  padding-left: 20px;
+} 
+
+.time-block hr {
+  border: none;
+  box-shadow: none;
+  border-bottom: 1px solid grey;
+}

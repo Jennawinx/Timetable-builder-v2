@@ -3,9 +3,11 @@
    [cljs.reader :as reader]
    [cljs.pprint :as pprint]
    [clojure.string :as string]
-
+   [markdown.core :as md]
+   
    [reagent.core :as r]
    [reagent.dom :as d]
+   
    [timeable-builder.timetable :as timetable]
 
    [syn-antd.button   :as button]
@@ -156,16 +158,20 @@
      [timetable/timetable
       {:state            timetable-state
        :table-config
-       {:render-cell-fn (fn [{:keys [title tags] :as cell-info}]
-                          (prn "cell-info " cell-info)
-                          [:div
-                           {:style {:padding :1em}}
-                           [:p.timeblock_title title]
-                           (for [{:keys [label color]} tags]
-                             ^{:key label}
-                             [tag/tag {:style {:background-color (or color :gainsboro)}
-                                       :class "tag"}
-                              label])])}}]
+       {:render-cell-fn (fn [{:keys [title tags desc]}]
+                          [:div {:style {:padding "0.75em 1em"}}
+                           [:div.timeblock__title " " title " "]
+                           [:div.timeblock__tag-group
+                            (for [{:keys [label color]} tags]
+                              ^{:key label}
+                              [tag/tag {:style {:background-color (or color :gainsboro)}
+                                        :class "tag"}
+                               label])]
+                           [:div {:style 
+                                  {:margin-top "6px"
+                                   :padding    "0 0.25em"}
+                                  :dangerouslySetInnerHTML
+                                  {:__html (md/md->html desc)}}]])}}]
      [:pre
       {:style {:min-height :10em}}
       [:code (with-out-str (pprint/pprint @state))]]]))

@@ -15,13 +15,17 @@ body {
   border-radius: 0.25em;
   border:        1px solid rgba(100,100,100,0.4);
   color:         rgba(20,20,20,0.8);
+  margin-left:   0em;
   margin:        0.25em;
 }
 
-.timeblock_title {
+.timeblock__title {
+  display:       inline-block;
   font-size:     120%;
   font-weight:   bold;
-  margin-bottom: 0.25em;
+  text-align:    center;
+  margin:        0.25em;
+  margin-top:    0.5em;
 }
 
 /* Overwrite antd */
@@ -37,4 +41,10 @@ body {
   width:            10px;
   margin:           5px;
   border-radius:    5px;
+}
+
+.timeblock__tag-group {
+  display:         inline-block;
+  margin-top:      0.5em;
+  text-align:      center;
 }
