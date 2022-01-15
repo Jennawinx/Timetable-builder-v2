@@ -24,18 +24,12 @@
    [syn-antd.tag          :as tag]
    [syn-antd.upload       :as upload]))
 
+;; --- Utils
+
 (defn element-value
   "Gets the value of the targeted element"
   [e]
   (-> e .-target .-value))
-
-(defn local-save! [time-blocks]
-  (.setItem js/localStorage :time-blocks (pr-str time-blocks))
-  (message/success-ant-message "Local save complete"))
-
-(defn get-local-save []
-  (-> (.getItem js/localStorage :time-blocks)
-      (reader/read-string)))
 
 (defn download-as-edn! [value export-name]
   (let [data-blob (js/Blob. #js [(with-out-str (pprint/pprint value))]  #js {:type "text/plain"})
@@ -51,6 +45,24 @@
       (string/replace #"[\s]" "_")
       (string/replace #"[,]" "")
       (string/replace #"[/:]" "-")))
+
+;; --- Import/Export
+
+(defn local-save! [timetable]
+  (.setItem js/localStorage :timetable (pr-str timetable))
+  (message/success-ant-message "Local save complete"))
+
+(defn get-local-save []
+  (-> (.getItem js/localStorage :timetable)
+      (reader/read-string)))
+
+(defn download-timetable [timetable]
+  (download-as-edn! timetable (str "timetable_" (filename-safe-datetime) ".edn")))
+
+(defn load-in-data [state s]
+  (let [timetable (reader/read-string s)]
+    (swap! state assoc :timetable timetable)
+    (local-save! timetable)))
 
 (defn tag-suggestions 
   "Walks through timeblocks data for used tags
@@ -79,13 +91,11 @@
    [row/row
     [col/col {:lg 24 :sm 8}
      [button/button {:block    true
-                     :on-click #(local-save! (get-in @state [:timetable :time-blocks]))}
+                     :on-click #(local-save! (:timetable @state))}
       "Local Save"]]
     [col/col {:lg 24 :sm 8}
      [button/button {:block    true
-                     :on-click #(download-as-edn!
-                                 (get-in @state [:timetable :time-blocks])
-                                 (str "timetable_" (filename-safe-datetime) ".edn"))}
+                     :on-click #(download-timetable (:timetable @state))}
       "Download Data"]]
     [col/col {:lg 24 :sm 8}
      [upload/upload {:name      :file
@@ -94,11 +104,7 @@
                      :before-upload
                      (fn [file]
                        (-> (.text file)
-                           (.then
-                            (fn [s]
-                              (let [value (reader/read-string s)]
-                                (swap! state assoc-in [:timetable :time-blocks] value)
-                                (local-save! value))))))}
+                           (.then (partial load-in-data state))))}
       [button/button {:block true}
        "Load Data"]]]]])
 
@@ -195,37 +201,37 @@
       [col/col
        [:div "Display days: "]
        [checkbox/checkbox-group
-        {:value     (get-in @state [:table-config :days])
+        {:value     (get-in @state [:timetable :table-config :days])
          :options   [:sun :mon :tue :wed :thu :fri :sat]
          :on-change (fn [days]
-                      (swap! state assoc-in [:table-config :days] (map keyword days)))}]]]
+                      (swap! state assoc-in [:timetable :table-config :days] (map keyword days)))}]]]
      [row/row {:gutter 12
                :style  {:margin-top :0.5em}}
       [col/col
        [:div "Start time: "]
        [input-number/input-number
-        {:value     (get-in @state [:table-config :min-time])
-         :step      (get-in @state [:table-config :increment])
-         :on-change #(swap! state assoc-in [:table-config :min-time] %)}]]
+        {:value     (get-in @state [:timetable :table-config :min-time])
+         :step      (get-in @state [:timetable :table-config :increment])
+         :on-change #(swap! state assoc-in [:timetable :table-config :min-time] %)}]]
       [col/col
        [:div "End time: "]
        [input-number/input-number
-        {:value     (get-in @state [:table-config :max-time])
-         :step      (get-in @state [:table-config :increment])
-         :on-change #(swap! state assoc-in [:table-config :max-time] %)}]]
+        {:value     (get-in @state [:timetable :table-config :max-time])
+         :step      (get-in @state [:timetable :table-config :increment])
+         :on-change #(swap! state assoc-in [:timetable :table-config :max-time] %)}]]
       [col/col
        [:div "Increment: "]
        [input-number/input-number
-        {:value     (get-in @state [:table-config :increment])
+        {:value     (get-in @state [:timetable :table-config :increment])
          :step      0.25
-         :on-change #(swap! state assoc-in [:table-config :increment] %)}]]
+         :on-change #(swap! state assoc-in [:timetable :table-config :increment] %)}]]
       [col/col
        [:div "Cell Height: "]
        [input-number/input-number
-        {:value     (get-in @state [:table-config :cell-height])
+        {:value     (get-in @state [:timetable :table-config :cell-height])
          :step      10
          :on-change (fn [value]
-                      (swap! state assoc-in [:table-config :cell-height] value))}]]]]
+                      (swap! state assoc-in [:timetable :table-config :cell-height] value))}]]]]
     [col/col {:lg 4}
      [action-buttons state]]]])
 
@@ -254,15 +260,17 @@
           {:__html (md/md->html desc)}}]])
 
 (defn home-page []
-  (r/with-let [time-blocks     (get-local-save)
-               state           (r/atom {:table-config  {:days          [:sun :mon :tue :wed :thu :fri :sat]
-                                                        :increment     0.5
-                                                        :min-time      7
-                                                        :max-time      18
-                                                        :cell-height   60}
-                                        :timetable
-                                        {:time-blocks   (or time-blocks {})}
-                                        :show-toolbar? true})
+  (r/with-let [state           (r/atom
+                                {:timetable
+                                 (or (get-local-save)
+                                     {:time-blocks   {}
+                                      :table-config  {:days          [:sun :mon :tue :wed :thu :fri :sat]
+                                                      :increment     0.5
+                                                      :min-time      7
+                                                      :max-time      18
+                                                      :cell-height   60}})
+                                 :show-toolbar? true})
+
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
      [:div.open-editor-btn
@@ -271,9 +279,7 @@
        [toolbar state])
      [timetable/timetable
       {:state            timetable-state
-       :table-config     (merge 
-                          (get @state :table-config)
-                          {:render-cell-fn  custom-cell-renderer})}]
+       :table-config     {:render-cell-fn  custom-cell-renderer}}]
      #_[:pre
       {:style {:min-height :10em}}
       [:code (with-out-str (pprint/pprint @state))]]]))

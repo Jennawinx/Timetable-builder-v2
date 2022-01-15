@@ -249,7 +249,10 @@
 
 (defn timetable [{:keys [state table-config]}]
   (let [{:keys [days increment min-time max-time header-height cell-height]
-         :as   table-config} (merge table-default-config table-config)]
+         :as   table-config} (merge table-default-config   ;; default config
+                                    table-config           ;; init config
+                                    (:table-config @state) ;; dynamic config
+       )]
     [:div.timetable
      ;; Left
      [:div.table-left-col
