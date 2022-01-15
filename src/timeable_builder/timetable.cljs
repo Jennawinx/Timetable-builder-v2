@@ -19,7 +19,11 @@
 ;; Utils
 
 (defn format-24int->12hr [the-time]
-  (str (int (if (< the-time 12) the-time (- the-time 12)))
+  (str (int (if (< the-time 12)
+              the-time
+              (if (< (- the-time 12) 1)
+                12
+                (- the-time 12))))
        ":" (let [v (int (* (mod the-time 1) 60))]
              (if (= v 0) "00" (str v)))
        " " (if (< the-time 12) "AM" "PM")))
