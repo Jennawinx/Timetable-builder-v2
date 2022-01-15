@@ -18,6 +18,7 @@
    [syn-antd.row      :as row]
    [syn-antd.select   :as select]
    [syn-antd.space    :as space]
+   [syn-antd.tabs     :as tabs]
    [syn-antd.tag      :as tag]
    [syn-antd.upload   :as upload]))
 
@@ -140,6 +141,7 @@
 
 (defn toolbar [state]
   (let [selection     (get-in @state [:timetable :selected])
+        disabled?     (nil? selection)
         timeblocks    (get-in @state [:timetable :time-blocks])
         set-property! (fn [field value]
                         (swap! state assoc-in (concat [:timetable :time-blocks] selection [field])
@@ -155,29 +157,29 @@
         [input/input
          {:type      :text
           :value     (get-property :title)
-          :disabled  (nil? selection)
+          :disabled  disabled?
           :on-change #(set-property! :title (element-value %))}]]
        [col/col {:flex "50px"}
         [:div "Color: "]
         [input/input
          {:type      :color
           :value     (or (get-property :cell-color) "#add8e6")
-          :disabled  (nil? selection)
+          :disabled  disabled?
           :on-change #(set-property! :cell-color (element-value %))}]]
        [col/col {:flex "50px"}
         [:div "Font: "]
         [input/input
          {:type      :color
           :value     (or (get-property :font-color) "black")
-          :disabled  (nil? selection)
+          :disabled  disabled?
           :on-change #(set-property! :font-color (element-value %))}]]]
-      [tag-selector timeblocks (nil? selection) get-property set-property!]]
+      [tag-selector timeblocks disabled? get-property set-property!]]
      [col/col {:lg 13 :sm 16}
       [:div.flex-fill {:style {:flex-grow 1}}
        [:div "Desc: "]
        [input/input-text-area
         {:value     (get-property :desc)
-         :disabled  (nil? selection)
+         :disabled  disabled?
          :on-change #(set-property! :desc (element-value %))
          :rows      4}]]]
      [col/col {:lg 3 :sm 24}
