@@ -26,7 +26,7 @@
                 (- the-time 12))))
        ":" (let [v (int (* (mod the-time 1) 60))]
              (if (= v 0) "00" (str v)))
-       " " (if (< the-time 12) "AM" "PM")))
+       #_#_" " (if (< the-time 12) "AM" "PM")))
 
 (defn hide-default-drag-preview! [e]
   (let [img (.createElement js/document "img")]
