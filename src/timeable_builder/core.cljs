@@ -10,17 +10,19 @@
    
    [timeable-builder.timetable :as timetable]
 
-   [syn-antd.button   :as button]
-   [syn-antd.col      :as col]
-   [syn-antd.form     :as form]
-   [syn-antd.input    :as input]
-   [syn-antd.message  :as message]
-   [syn-antd.row      :as row]
-   [syn-antd.select   :as select]
-   [syn-antd.space    :as space]
-   [syn-antd.tabs     :as tabs]
-   [syn-antd.tag      :as tag]
-   [syn-antd.upload   :as upload]))
+   [syn-antd.button       :as button]
+   [syn-antd.checkbox     :as checkbox]
+   [syn-antd.col          :as col]
+   [syn-antd.form         :as form]
+   [syn-antd.input        :as input]
+   [syn-antd.input-number :as input-number]
+   [syn-antd.message      :as message]
+   [syn-antd.row          :as row]
+   [syn-antd.select       :as select]
+   [syn-antd.space        :as space]
+   [syn-antd.tabs         :as tabs]
+   [syn-antd.tag          :as tag]
+   [syn-antd.upload       :as upload]))
 
 (defn element-value
   "Gets the value of the targeted element"
@@ -185,7 +187,47 @@
       [action-buttons state]]]))
 
 (defn toolbar-edit-timetable-settings [state]
-  [:div])
+  [:div
+   [row/row {:gutter 12
+             :style  {:padding :1em}}
+    [col/col {:span 20}
+     [row/row
+      [col/col
+       [:div "Display days: "]
+       [checkbox/checkbox-group
+        {:value     (get-in @state [:table-config :days])
+         :options   [:sun :mon :tue :wed :thu :fri :sat]
+         :on-change (fn [days]
+                      (swap! state assoc-in [:table-config :days] (map keyword days)))}]]]
+     [row/row {:gutter 12
+               :style  {:margin-top :0.5em}}
+      [col/col
+       [:div "Start time: "]
+       [input-number/input-number
+        {:value     (get-in @state [:table-config :min-time])
+         :step      (get-in @state [:table-config :increment])
+         :on-change #(swap! state assoc-in [:table-config :min-time] %)}]]
+      [col/col
+       [:div "End time: "]
+       [input-number/input-number
+        {:value     (get-in @state [:table-config :max-time])
+         :step      (get-in @state [:table-config :increment])
+         :on-change #(swap! state assoc-in [:table-config :max-time] %)}]]
+      [col/col
+       [:div "Increment: "]
+       [input-number/input-number
+        {:value     (get-in @state [:table-config :increment])
+         :step      0.25
+         :on-change #(swap! state assoc-in [:table-config :increment] %)}]]
+      [col/col
+       [:div "Cell Height: "]
+       [input-number/input-number
+        {:value     (get-in @state [:table-config :cell-height])
+         :step      10
+         :on-change (fn [value]
+                      (swap! state assoc-in [:table-config :cell-height] value))}]]]]
+    [col/col {:lg 4}
+     [action-buttons state]]]])
 
 (defn toolbar [state]
   [tabs/tabs {:tab-position :left :class "toolbar-tab-group"}
@@ -213,8 +255,13 @@
 
 (defn home-page []
   (r/with-let [time-blocks     (get-local-save)
-               state           (r/atom {:timetable
-                                        {:time-blocks (or time-blocks {})}
+               state           (r/atom {:table-config  {:days          [:sun :mon :tue :wed :thu :fri :sat]
+                                                        :increment     0.5
+                                                        :min-time      7
+                                                        :max-time      18
+                                                        :cell-height   60}
+                                        :timetable
+                                        {:time-blocks   (or time-blocks {})}
                                         :show-toolbar? true})
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
@@ -224,7 +271,9 @@
        [toolbar state])
      [timetable/timetable
       {:state            timetable-state
-       :table-config     {:render-cell-fn  custom-cell-renderer}}]
+       :table-config     (merge 
+                          (get @state :table-config)
+                          {:render-cell-fn  custom-cell-renderer})}]
      #_[:pre
       {:style {:min-height :10em}}
       [:code (with-out-str (pprint/pprint @state))]]]))
