@@ -38,6 +38,15 @@ body {
   width:         100%;
 }
 
+.toolbar {
+  background-color: white;
+  border-bottom:    1px solid grey;
+  position:         fixed;
+  top:              0;
+  width:            100%;
+  z-index:          999;
+}
+
 .open-editor-btn {
   position:         absolute;
   background-color: greenyellow;
@@ -46,11 +55,14 @@ body {
   width:            10px;
   margin:           5px;
   border-radius:    5px;
-  z-index:          999;
+  z-index:          1000;
 }
 
 .toolbar-tab-group {
   height:           150px;
+}
+.timetable-builder .toolbar.opened+.timetable {
+  margin-top:       150px;
 }
 
 /* NOT THE BEST */
@@ -58,6 +70,9 @@ body {
   .toolbar-tab-group {
     height:         200px;
   }  
+  .timetable-builder .toolbar.opened+.timetable {
+    margin-top:     200px;
+  }
 }
 
 .toolbar-tab-group .ant-tabs-nav-list {

@@ -236,11 +236,15 @@
      [action-buttons state]]]])
 
 (defn toolbar [state]
-  [tabs/tabs {:tab-position :left :class "toolbar-tab-group"}
-   [tabs/tabs-tab-pane {:tab "Edit" :key "Edit"}
-    [toolbar-edit-timeblock state]]
-   [tabs/tabs-tab-pane {:tab "Time Table" :key "TimeTable"}
-    [toolbar-edit-timetable-settings state]]])
+  [:div.toolbar {:class (when (:show-toolbar? @state) "opened")}
+   [:div.open-editor-btn
+    {:on-click #(swap! state update :show-toolbar? not)}]
+   (when (:show-toolbar? @state)
+     [tabs/tabs {:tab-position :left :class "toolbar-tab-group"}
+      [tabs/tabs-tab-pane {:tab "Edit" :key "Edit"}
+       [toolbar-edit-timeblock state]]
+      [tabs/tabs-tab-pane {:tab "Time Table" :key "TimeTable"}
+       [toolbar-edit-timetable-settings state]]])])
 
 (defn custom-cell-renderer 
   [{:keys [title tags desc font-color]}]
@@ -273,10 +277,7 @@
 
                timetable-state (r/cursor state [:timetable])]
     [:div.timetable-builder
-     [:div.open-editor-btn
-      {:on-click #(swap! state update :show-toolbar? not)}]
-     (when (:show-toolbar? @state)
-       [toolbar state])
+     [toolbar state]
      [timetable/timetable
       {:state            timetable-state
        :table-config     {:render-cell-fn  custom-cell-renderer}}]
