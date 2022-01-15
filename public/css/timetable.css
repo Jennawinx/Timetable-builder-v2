@@ -5,11 +5,8 @@
   margin:             0;
   padding:            0;
   min-height:         50vh;
-  /* scrollbar-width:    thin; */
-  /* scrollbar-color:  #6969dd #e0e0e0; */
-  /* scrollbar-gutter:   stable; */
-  display            : flex;
-  flex-direction     : row;
+  display:            flex;
+  flex-direction:     row;
 }
 
 .timetable .table-left-col {
@@ -60,8 +57,8 @@
 }
 
 .timetable .table-cell {
-  border-right  : 1px solid rgba(0,0,0,0.2);
-  border-top    : 1px solid rgba(0,0,0,0.2);
+  border-right  : 1px solid rgba(0,0,0,0.1);
+  border-top    : 1px solid rgba(0,0,0,0.1);
   box-sizing    : border-box;
 }
 
@@ -121,11 +118,11 @@
 }
 
 .timetable .time-block .delete-btn {
-  color            : white;
+  color               : white;
 }
 
 .timetable .time-block .delete-btn:hover {
-  color            : red;
+  color               : red;
 }
 
 
@@ -166,8 +163,6 @@
   margin-right     : 1em;
   /* width            : 100%; */
 }
-
-
 
 .timetable .note {
   color            : #BBB;
