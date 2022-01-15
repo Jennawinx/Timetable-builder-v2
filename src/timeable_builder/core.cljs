@@ -97,13 +97,20 @@
           :value     (get-property :title)
           :disabled  (nil? selection)
           :on-change #(set-property! :title (element-value %))}]]
-       [col/col
-        [:div "Colour: "]
+       [col/col {:flex "50px"}
+        [:div "Color: "]
         [input/input
          {:type      :color
           :value     (or (get-property :cell-color) "#add8e6")
           :disabled  (nil? selection)
-          :on-change #(set-property! :cell-color (element-value %))}]]]
+          :on-change #(set-property! :cell-color (element-value %))}]]
+       [col/col {:flex "50px"}
+        [:div "Font: "]
+        [input/input
+         {:type      :color
+          :value     (or (get-property :font-color) "black")
+          :disabled  (nil? selection)
+          :on-change #(set-property! :font-color (element-value %))}]]]
       [row/row
        [:div "Tags: "]
        [select/select
@@ -166,15 +173,16 @@
       [action-buttons state]]]))
 
 (defn custom-cell-renderer 
-  [{:keys [title tags desc]}]
-  [:div {:style {:padding "0.75em 1em"}}
-   [:div.timeblock__title " " title " "]
+  [{:keys [title tags desc font-color]}]
+  [:div {:style {:padding "0.75em 1em"
+                 :color   font-color}}
    [:div.timeblock__tag-group
     (for [{:keys [label color]} tags]
       ^{:key label}
       [tag/tag {:style {:background-color color}
                 :class "tag"}
        label])]
+   [:div.timeblock__title " " title " "]
    [:div {:style
           {:margin-top "6px"
            :padding    "0 0.25em"}

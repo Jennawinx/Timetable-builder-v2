@@ -10,6 +10,10 @@ body {
   margin: 0;
 }
 
+.timeblock__tag-group {
+  margin-top:      0.5em;
+}
+
 .tag {
   box-sizing:    border-box;
   border-radius: 0.25em;
@@ -20,12 +24,11 @@ body {
 }
 
 .timeblock__title {
-  display:       inline-block;
-  font-size:     120%;
+  /* display:       inline-block; */
+  font-size:     150%;
   font-weight:   bold;
   text-align:    center;
-  margin:        0.25em;
-  margin-top:    0.5em;
+  margin:        1em 0.5em;
 }
 
 /* Overwrite antd */
@@ -41,10 +44,4 @@ body {
   width:            10px;
   margin:           5px;
   border-radius:    5px;
-}
-
-.timeblock__tag-group {
-  display:         inline-block;
-  margin-top:      0.5em;
-  text-align:      center;
 }
