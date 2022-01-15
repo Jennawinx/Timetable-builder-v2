@@ -8,6 +8,7 @@ body {
   color: #333;
   line-height: 1.5em; */
   margin: 0;
+  min-width: 800px;
 }
 
 .timeblock__tag-group {
@@ -27,8 +28,9 @@ body {
   /* display:       inline-block; */
   font-size:     150%;
   font-weight:   bold;
+  line-height:   1.25em;
   text-align:    center;
-  margin:        1em 0.5em;
+  margin:        1em 0em;
 }
 
 /* Overwrite antd */
@@ -44,4 +46,22 @@ body {
   width:            10px;
   margin:           5px;
   border-radius:    5px;
+  z-index:          999;
+}
+
+.toolbar-tab-group {
+  height:           150px;
+}
+
+/* NOT THE BEST */
+@media only screen and (max-width: 990px) {
+  .toolbar-tab-group {
+    height:         200px;
+  }  
+}
+
+.toolbar-tab-group .ant-tabs-nav-list {
+  margin-top: 1em;
+  width: 75px;
+  white-space: pre-wrap;
 }
