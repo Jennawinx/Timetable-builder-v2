@@ -144,6 +144,22 @@
      [col/col {:lg 3 :sm 24}
       [action-buttons state]]]))
 
+(defn custom-cell-renderer 
+  [{:keys [title tags desc]}]
+  [:div {:style {:padding "0.75em 1em"}}
+   [:div.timeblock__title " " title " "]
+   [:div.timeblock__tag-group
+    (for [{:keys [label color]} tags]
+      ^{:key label}
+      [tag/tag {:style {:background-color (or color :gainsboro)}
+                :class "tag"}
+       label])]
+   [:div {:style
+          {:margin-top "6px"
+           :padding    "0 0.25em"}
+          :dangerouslySetInnerHTML
+          {:__html (md/md->html desc)}}]])
+
 (defn home-page []
   (r/with-let [time-blocks     (get-local-save)
                state           (r/atom {:timetable
@@ -157,22 +173,8 @@
        [toolbar state])
      [timetable/timetable
       {:state            timetable-state
-       :table-config
-       {:render-cell-fn (fn [{:keys [title tags desc]}]
-                          [:div {:style {:padding "0.75em 1em"}}
-                           [:div.timeblock__title " " title " "]
-                           [:div.timeblock__tag-group
-                            (for [{:keys [label color]} tags]
-                              ^{:key label}
-                              [tag/tag {:style {:background-color (or color :gainsboro)}
-                                        :class "tag"}
-                               label])]
-                           [:div {:style 
-                                  {:margin-top "6px"
-                                   :padding    "0 0.25em"}
-                                  :dangerouslySetInnerHTML
-                                  {:__html (md/md->html desc)}}]])}}]
-     [:pre
+       :table-config     {:render-cell-fn  custom-cell-renderer}}]
+     #_[:pre
       {:style {:min-height :10em}}
       [:code (with-out-str (pprint/pprint @state))]]]))
 
