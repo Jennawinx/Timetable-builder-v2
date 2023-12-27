@@ -10,5 +10,4 @@
                       :modules    {:app {:entries [timeable-builder.core]}}
                       :devtools   {:after-load timeable-builder.core/mount-root}}}
 
- :dev-http     {3000 {:root    "public"
-                      :handler user/app}}}
+ :dev-http     {3000 "public"}}

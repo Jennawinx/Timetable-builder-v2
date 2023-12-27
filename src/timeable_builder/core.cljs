@@ -264,26 +264,27 @@
           {:__html (md/md->html desc)}}]])
 
 (defn home-page []
-  (r/with-let [state           (r/atom
-                                {:timetable
-                                 (or (get-local-save)
-                                     {:time-blocks   {}
-                                      :table-config  {:days          [:sun :mon :tue :wed :thu :fri :sat]
-                                                      :increment     0.5
-                                                      :min-time      7
-                                                      :max-time      18
-                                                      :cell-height   60}})
-                                 :show-toolbar? true})
+  (let [state           (r/atom
+                         {:timetable
+                          (or (get-local-save)
+                              {:time-blocks   {}
+                               :table-config  {:days          [:sun :mon :tue :wed :thu :fri :sat]
+                                               :increment     0.5
+                                               :min-time      7
+                                               :max-time      18
+                                               :cell-height   60}})
+                          :show-toolbar? true})
 
-               timetable-state (r/cursor state [:timetable])]
-    [:div.timetable-builder
-     [toolbar state]
-     [timetable/timetable
-      {:state            timetable-state
-       :table-config     {:render-cell-fn  custom-cell-renderer}}]
-     #_[:pre
-      {:style {:min-height :10em}}
-      [:code (with-out-str (pprint/pprint @state))]]]))
+        timetable-state (r/cursor state [:timetable])]
+    (fn []
+      [:div.timetable-builder
+       [toolbar state]
+       [timetable/timetable
+        {:state            timetable-state
+         :table-config     {:render-cell-fn  custom-cell-renderer}}]
+       #_[:pre
+          {:style {:min-height :10em}}
+          [:code (with-out-str (pprint/pprint @state))]]])))
 
 
 ;; -------------------------
