@@ -158,7 +158,7 @@
                         (get-in @state (concat [:timetable :time-blocks] selection [field])))]
     [row/row {:gutter 12 
               :style  {:padding :1em}}
-     [col/col {:lg 8 :sm 12}
+     [col/col {:lg 8 :sm 12 :xs 24}
       [row/row {:wrap false}
        [col/col {:flex :auto}
         [:div "Title: "]
@@ -182,7 +182,7 @@
           :disabled  disabled?
           :on-change #(set-property! :font-color (element-value %))}]]]
       [tag-selector timeblocks disabled? get-property set-property!]]
-     [col/col {:lg 12 :sm 12}
+     [col/col {:lg 12 :sm 12 :xs 24}
       [:div "Desc: "]
        [input/input-text-area
         {:value     (get-property :desc)
@@ -238,13 +238,12 @@
 (defn toolbar [state]
   [:div.toolbar {:class (when (:show-toolbar? @state) "opened")}
    [:div.open-editor-btn
-    {:on-click #(swap! state update :show-toolbar? not)}]
-   (when (:show-toolbar? @state)
-     [tabs/tabs {:tab-position :left :class "toolbar-tab-group"}
-      [tabs/tabs-tab-pane {:tab "Edit" :key "Edit"}
-       [toolbar-edit-timeblock state]]
-      [tabs/tabs-tab-pane {:tab "Time Table" :key "TimeTable"}
-       [toolbar-edit-timetable-settings state]]])])
+    {:on-click #(swap! state update :show-toolbar? not)}] 
+   [tabs/tabs {:tab-position :left :class "toolbar-tab-group"}
+    [tabs/tabs-tab-pane {:tab "Edit" :key "Edit"}
+     [toolbar-edit-timeblock state]]
+    [tabs/tabs-tab-pane {:tab "Time Table" :key "TimeTable"}
+     [toolbar-edit-timetable-settings state]]]])
 
 (defn custom-cell-renderer 
   [{:keys [title tags desc font-color]}]

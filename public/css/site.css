@@ -41,39 +41,52 @@ body {
 .toolbar {
   background-color: white;
   border-bottom:    1px solid grey;
-  position:         fixed;
+  position:         relative;
   top:              0;
   width:            100%;
   z-index:          999;
 }
 
+.toolbar-tab-group {
+  overflow:         hidden;
+  max-height:       100vh;
+}
+
+.opened .toolbar-tab-group {
+  max-height:       0px;
+  transition:       max-height 0.3s ease;
+}
+
 .open-editor-btn {
+  cursor:           pointer;
+  user-select:      none;
   position:         absolute;
   background-color: greenyellow;
   border:           1px solid grey;
-  height:           10px;
-  width:            10px;
+  transition:       all 0.2s ease;
   margin:           5px;
-  border-radius:    5px;
+  height:           20px;
+  width:            20px;
+  border-radius:    12px;
   z-index:          1000;
 }
 
-.toolbar-tab-group {
-  height:           150px;
-}
-.timetable-builder .toolbar.opened+.timetable {
-  margin-top:       150px;
+.open-editor-btn:hover {
+  background-color: rgb(49, 162, 104);
 }
 
-/* NOT THE BEST */
-@media only screen and (max-width: 990px) {
-  .toolbar-tab-group {
-    height:         200px;
-  }  
-  .timetable-builder .toolbar.opened+.timetable {
-    margin-top:     200px;
-  }
+.opened .open-editor-btn {
+  background-color: salmon;
+  height:           16px;
+  width:            16px;
+  border-radius:    8px;
 }
+
+.opened .open-editor-btn:hover {
+  background-color: sienna;
+}
+
+
 
 .toolbar-tab-group .ant-tabs-nav-list {
   margin-top: 1em;
