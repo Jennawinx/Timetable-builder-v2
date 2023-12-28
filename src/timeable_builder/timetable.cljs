@@ -141,16 +141,20 @@
                              ((:on-drag-over mouse-events) e)
                              
                              (let [cell-top  (-> e (.-target) (.getBoundingClientRect) (.-y))
-                                   touch-y   (-> e (.-touches) (first) (.-pageY))
+                                   touch-y   (-> e (.-touches) (first) (.-clientY))
                                    distance  (- touch-y cell-top)
                                    cells     (if (pos? distance)
                                                (math/ceil (/ distance cell-height))
                                                (math/floor (/ distance cell-height)))
                                    new-time  (+ the-time (* cells increment))
                                    to-time   (second (get-in @state [:drag-and-drop :to]))]
+                               (js/console.log cell-top touch-y)
+                               
                                (when (and to-time (not= new-time to-time))
                                  ;; Approximation to drag enter
                                  (prn "on-touchenter" day the-time)
+                                 (js/console.log (-> e (.-target) (.getBoundingClientRect))
+                                                 (-> e (.-touches) (first)))
                                  (swap! state assoc-in [:drag-and-drop :to] [day new-time]))))
            
            :on-touch-end   (fn [e]
