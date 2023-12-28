@@ -46,6 +46,7 @@
 }
 
 .timetable .table-body {
+  touch-action     : none;
   display          : flex;
   flex-direction   : row;
   align-items      : end;
@@ -57,12 +58,14 @@
 }
 
 .timetable .table-cell {
+  touch-action  : none;
   border-right  : 1px solid rgba(0,0,0,0.1);
   border-top    : 1px solid rgba(0,0,0,0.1);
   box-sizing    : border-box;
 }
 
 .timetable .time-block {
+  touch-action     : none;
   background-color : lightblue;
   /* border-radius    : 5px; */
   border           : 2px solid white;
@@ -96,6 +99,7 @@
 }
 
 .timetable .time-block-body {
+  touch-action        : none;
   flex-grow           : 1;
   height              : 100%;
   overflow-y          : auto;

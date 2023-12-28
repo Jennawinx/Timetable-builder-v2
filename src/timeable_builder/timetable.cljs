@@ -1,5 +1,6 @@
 (ns timeable-builder.timetable
   (:require
+   [clojure.math :as math]
    [reagent.core :as r]
    [reagent.dom :as d]))
 
@@ -81,46 +82,84 @@
 ;; -------------------------
 ;; Views
 
-(defn drag-drop-cell-listeners [{:keys [state day the-time hide-preview? custom-handlers]}]
+(defn drag-drop-cell-listeners [{:keys [state day the-time cell-height increment hide-preview? custom-handlers]}]
   (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave
                 on-drag-over on-drag-start on-drop]} custom-handlers]
-    {:draggable     true
-     :on-drag       (fn [e]
-                      #_(prn "on-drag" day the-time)
-                      (when (fn? on-drag) (on-drag e))
-                      #_(.preventDefault e))
+    (let [mouse-events
+          {:draggable     true
+           :on-drag       (fn [e]
+                            #_(prn "on-drag" day the-time)
+                            (when (fn? on-drag) (on-drag e))
+                            #_(.preventDefault e))
 
-     :on-drag-end   (fn [e]
-                      (prn "on-dragend" day the-time)
-                      (when (fn? on-drag-end) (on-drag-end e))
-                      (swap! state dissoc :drag-and-drop))
+           :on-drag-end   (fn [e]
+                            (prn "on-dragend" day the-time)
+                            (when (fn? on-drag-end) (on-drag-end e))
+                            (swap! state dissoc :drag-and-drop))
 
-     :on-drag-enter (fn [e]
-                      (prn "on-dragenter" day the-time)
-                      (swap! state assoc-in [:drag-and-drop :to] [day the-time])
-                      (when (fn? on-drag-enter) (on-drag-enter e)))
+           :on-drag-enter (fn [e]
+                            (prn "on-dragenter" day the-time)
+                            (swap! state assoc-in [:drag-and-drop :to] [day the-time])
+                            (when (fn? on-drag-enter) (on-drag-enter e)))
 
-     :on-drag-leave (fn [e]
-                      (prn "on-dragleave" day the-time)
-                      (when (fn? on-drag-leave) (on-drag-leave e)))
+           #_#_ ;; not supported for touch
+           :on-drag-leave (fn [e]
+                            (prn "on-dragleave" day the-time)
+                            (when (fn? on-drag-leave) (on-drag-leave e)))
 
-     :on-drag-over  (fn [e]
-                      #_(prn "on-dragover" day the-time)
-                      (when (fn? on-drag-over) (on-drag-over e)))
+           #_#_ ;; too much noise
+           :on-drag-over  (fn [e]
+                            #_(prn "on-dragover" day the-time)
+                            (when (fn? on-drag-over) (on-drag-over e)))
 
-     :on-drag-start (fn [e]
-                      (prn "on-dragstart" day the-time)
-                      (when hide-preview?
-                        (hide-default-drag-preview! e))
-                      (swap! state assoc :drag-and-drop
-                             {:from    [day the-time]
-                              :to      [day the-time]
-                              :element e})
-                      (when (fn? on-drag-start) (on-drag-start e)))
+           :on-drag-start (fn [e]
+                            (prn "on-dragstart" day the-time)
+                            (when hide-preview?
+                              (try 
+                                (hide-default-drag-preview! e)
+                                (catch :default e
+                                  #_(js/console.error e))))
+                            (swap! state assoc :drag-and-drop
+                                   {:from    [day the-time]
+                                    :to      [day the-time]
+                                    :element e})
+                            (when (fn? on-drag-start) (on-drag-start e)))
 
-     :on-drop       (fn [e]
-                      (prn "on-drop" day the-time)
-                      (when (fn? on-drop) (on-drop e)))}))
+           :on-drop       (fn [e]
+                            (prn "on-drop" day the-time)
+                            (when (fn? on-drop) (on-drop e)))}
+          
+          touch-events
+          {:on-touch-start (fn [e]
+                             (prn "on-touchstart" day the-time)
+                             (js/console.log e)
+                             ((:on-drag-start mouse-events) e))
+           
+           :on-touch-move  (fn [e]
+                             #_#_ ;; Too much noise
+                             (prn "on-touchmove" day the-time)
+                             ((:on-drag-over mouse-events) e)
+                             
+                             (let [cell-top  (-> e (.-target) (.getBoundingClientRect) (.-y))
+                                   touch-y   (-> e (.-touches) (first) (.-pageY))
+                                   distance  (- touch-y cell-top)
+                                   cells     (if (pos? distance)
+                                               (math/ceil (/ distance cell-height))
+                                               (math/floor (/ distance cell-height)))
+                                   new-time  (+ the-time (* cells increment))
+                                   to-time   (second (get-in @state [:drag-and-drop :to]))]
+                               (when (and to-time (not= new-time to-time))
+                                 ;; Approximation to drag enter
+                                 (prn "on-touchenter" day the-time)
+                                 (swap! state assoc-in [:drag-and-drop :to] [day new-time]))))
+           
+           :on-touch-end   (fn [e]
+                             (prn "on-touchend" day the-time)
+                             ((:on-drag-end mouse-events) e))}]
+      (merge mouse-events 
+             touch-events))))
+
+
 
 (defn time-block-control-panel
   [state {:keys [increment] :as table-config} day the-time duration]
@@ -159,6 +198,8 @@
        {:state           state
         :day             day
         :the-time        the-time
+        :cell-height     cell-height
+        :increment       increment
         :hide-preview?   false
         :custom-handlers {:on-drag-end #(move-time-block! state)}})
       {:class           (when selected? "selected")
@@ -205,6 +246,8 @@
          {:state           state
           :day             day
           :the-time        the-time
+          :cell-height     cell-height
+          :increment       increment
           :hide-preview?   true
           :custom-handlers {:on-drag-start #(when-not (some? duration)
                                               (clear-selected-timeblock! state))
