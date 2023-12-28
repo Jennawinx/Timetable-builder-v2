@@ -221,10 +221,15 @@
          :on-change #(swap! state assoc-in [:timetable :table-config :max-time] %)}]]
       [col/col
        [:div "Increment: "]
-       [input-number/input-number
-        {:value     (get-in @state [:timetable :table-config :increment])
-         :step      0.25
-         :on-change #(swap! state assoc-in [:timetable :table-config :increment] %)}]]
+       [select/select
+        {:style          {:width :100px}
+         :show-arrow     true
+         :on-select      #(swap! state assoc-in [:timetable :table-config :increment] %)
+         :value          (get-in @state [:timetable :table-config :increment])
+         :options        [{:label "15 mins" :value 0.25}
+                          {:label "30 mins" :value 0.50}
+                          {:label "1 hour"  :value 1}
+                          {:label "2 hours" :value 2}]}]]
       [col/col
        [:div "Cell Height: "]
        [input-number/input-number
