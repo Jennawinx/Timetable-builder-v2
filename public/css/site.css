@@ -49,12 +49,12 @@ body {
 
 .toolbar-tab-group {
   overflow:         hidden;
-  max-height:       100vh;
+  max-height:       0px;
+  transition:       max-height 0.3s ease;
 }
 
 .opened .toolbar-tab-group {
-  max-height:       0px;
-  transition:       max-height 0.3s ease;
+  max-height:       100vh;
 }
 
 .open-editor-btn {
