@@ -26,6 +26,8 @@
 
 ;; --- Utils
 
+(def debug true)
+
 (defn element-value
   "Gets the value of the targeted element"
   [e]
@@ -267,7 +269,17 @@
           :dangerouslySetInnerHTML
           {:__html (md/md->html desc)}}]])
 
-(defn home-page []
+
+
+(defn wrap-debug-view [{:keys [state debug?]} & [component]]
+  (if-not debug?
+    component
+    [:div.debug-layout
+     component
+     [:pre.debug-console
+      [:code (with-out-str (pprint/pprint @state))]]]))
+
+(defn home-page [& [{:keys [debug] :or {debug false?} :as args}]]
   (let [state           (r/atom
                          {:timetable
                           (or (get-local-save)
@@ -279,16 +291,14 @@
                                                :cell-height   60}})
                           :show-toolbar? true})
 
-        timetable-state (r/cursor state [:timetable])]
+        timetable-state (r/cursor state [:timetable]) ]
     (fn []
-      [:div.timetable-builder
-       [toolbar state]
-       [timetable/timetable
-        {:state            timetable-state
-         :table-config     {:render-cell-fn  custom-cell-renderer}}]
-       #_[:pre
-          {:style {:min-height :10em}}
-          [:code (with-out-str (pprint/pprint @state))]]])))
+      [wrap-debug-view {:state state :debug? debug}
+       [:div.timetable-builder
+        [toolbar state]
+        [timetable/timetable
+         {:state            timetable-state
+          :table-config     {:render-cell-fn  custom-cell-renderer}}]]])))
 
 
 ;; -------------------------
