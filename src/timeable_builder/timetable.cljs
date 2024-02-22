@@ -82,9 +82,10 @@
 ;; -------------------------
 ;; Views
 
-(defn drag-drop-cell-listeners [{:keys [state day the-time cell-height increment hide-preview? custom-handlers]}]
+(defn drag-drop-cell-listeners [{:keys [state day the-time table-config hide-preview? custom-handlers]}]
   (let [{:keys [on-drag on-drag-end on-drag-enter on-drag-leave
-                on-drag-over on-drag-start on-drop]} custom-handlers]
+                on-drag-over on-drag-start on-drop]} custom-handlers
+        {:keys [cell-height increment days]} table-config]
     (let [mouse-events
           {:draggable     true
            :on-drag       (fn [e]
@@ -140,22 +141,31 @@
                              (prn "on-touchmove" day the-time)
                              ((:on-drag-over mouse-events) e)
                              
-                             (let [cell-top  (-> e (.-target) (.getBoundingClientRect) (.-y))
-                                   touch-y   (-> e (.-touches) (first) (.-clientY))
-                                   distance  (- touch-y cell-top)
-                                   cells     (if (pos? distance)
-                                               (math/ceil (/ distance cell-height))
-                                               (math/floor (/ distance cell-height)))
-                                   new-time  (+ the-time (* cells increment))
-                                   to-time   (second (get-in @state [:drag-and-drop :to]))]
-                               (js/console.log cell-top touch-y)
+                             (let [cell-top   (-> e (.-target) (.getBoundingClientRect) (.-y))
+                                   cell-left  (-> e (.-target) (.getBoundingClientRect) (.-x))
+                                   cell-width (-> e (.-target) .-offsetWidth)
+                                   y-touch    (-> e (.-touches) (first) (.-clientY))
+                                   x-touch    (-> e (.-touches) (first) (.-clientX))
+                                   y-distance (- y-touch cell-top)
+                                   x-distance (- x-touch cell-left)
+                                   y-mov-cnt  (if (pos? y-distance)
+                                                (math/ceil (/ y-distance cell-height))
+                                                (math/floor (/ y-distance cell-height)))
+                                   x-mov-cnt  (if (pos? x-distance)
+                                                (- (math/ceil (/ x-distance cell-width)) 1)
+                                                (math/floor (/ x-distance cell-width)))
+
+                                   new-time   (+ the-time (* y-mov-cnt increment))
+                                   to-time    (second (get-in @state [:drag-and-drop :to]))
+
+                                   new-day    (nth days (+ (.indexOf days day) x-mov-cnt))
+                                   to-day     (first (get-in @state [:drag-and-drop :to]))]
                                
+                               #_(js/console.log cell-height (-> e (.-target) .-offsetWidth) x-mov-cnt)
                                (when (and to-time (not= new-time to-time))
                                  ;; Approximation to drag enter
                                  (prn "on-touchenter" day the-time)
-                                 (js/console.log (-> e (.-target) (.getBoundingClientRect))
-                                                 (-> e (.-touches) (first)))
-                                 (swap! state assoc-in [:drag-and-drop :to] [day new-time]))))
+                                 (swap! state assoc-in [:drag-and-drop :to] [new-day new-time]))))
            
            :on-touch-end   (fn [e]
                              (prn "on-touchend" day the-time)
@@ -202,8 +212,7 @@
        {:state           state
         :day             day
         :the-time        the-time
-        :cell-height     cell-height
-        :increment       increment
+        :table-config    table-config
         :hide-preview?   false
         :custom-handlers {:on-drag-end #(move-time-block! state)}})
       {:class           (when selected? "selected")
@@ -250,8 +259,7 @@
          {:state           state
           :day             day
           :the-time        the-time
-          :cell-height     cell-height
-          :increment       increment
+          :table-config    table-config
           :hide-preview?   true
           :custom-handlers {:on-drag-start #(when-not (some? duration)
                                               (clear-selected-timeblock! state))

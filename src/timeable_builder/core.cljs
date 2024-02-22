@@ -279,7 +279,7 @@
      [:pre.debug-console
       [:code (with-out-str (pprint/pprint @state))]]]))
 
-(defn home-page [& [{:keys [debug] :or {debug false?} :as args}]]
+(defn home-page [& [{:keys [debug] :or {debug false} :as args}]]
   (let [state           (r/atom
                          {:timetable
                           (or (get-local-save)
